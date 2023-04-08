@@ -1,0 +1,16 @@
+
+
+.text-area {
+    width: 100%;
+    min-width: 300px;
+    min-height: auto;
+}
+
+.flex-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
