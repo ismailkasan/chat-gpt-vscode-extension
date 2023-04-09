@@ -17,6 +17,15 @@
         "command": "vscode-chat-gpt.start",
         "title": "Ask to ChatGpt"
       }
+    ],
+    "webviews": [
+      {
+        "viewType": "markdown.preview",
+        "icon": {
+          "light": "./out/chat-gpt-logo-2-HBRQ6ZBV.jpeg",
+          "dark": "./out/chat-gpt-logo-2-HBRQ6ZBV.jpeg"
+        }
+      }
     ]
   },
   "scripts": {

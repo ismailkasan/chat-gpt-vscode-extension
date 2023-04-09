@@ -2,9 +2,7 @@ import { fetch } from 'undici';
 import { TextDecoderStream } from 'node:stream/web';
 import { Observable } from 'rxjs';
 
-const API_KEY = 'your api key';
-
-export async function askToChatGpt(query: string | undefined) {
+export async function askToChatGpt(query: string | undefined,apikey:string) {
     try {
         // 👇️ const response: Response
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -16,7 +14,7 @@ export async function askToChatGpt(query: string | undefined) {
             }),
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: 'Bearer '+ API_KEY,
+                Authorization: 'Bearer ' + apikey,
             },
         });
 
@@ -42,7 +40,7 @@ export async function askToChatGpt(query: string | undefined) {
     }
 }
 
-export async function askToChatGptV2(query: string | undefined) {
+export async function askToChatGptV2(query: string | undefined,apikey:string) {
 
     try {
         // 👇️ const response: Response
@@ -56,7 +54,7 @@ export async function askToChatGptV2(query: string | undefined) {
             }),
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: 'Bearer '+ API_KEY,
+                Authorization: 'Bearer ' + apikey,
             },
         });
 
@@ -92,7 +90,7 @@ export async function askToChatGptV2(query: string | undefined) {
     }
 }
 
-export function askToChatGptV3(query: string | undefined): Observable<string> {
+export function askToChatGptV3(query: string | undefined, apikey:string): Observable<string> {
 
     return new Observable<string>(observer => {
         // 👇️ const response: Response
@@ -106,7 +104,7 @@ export function askToChatGptV3(query: string | undefined): Observable<string> {
             }),
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: 'Bearer '+ API_KEY,
+                Authorization: 'Bearer ' + apikey,
             },
         });
 
@@ -115,7 +113,7 @@ export function askToChatGptV3(query: string | undefined): Observable<string> {
             const textStream = res.body?.pipeThrough(new TextDecoderStream());
             if (textStream)
                 for await (const chunk of textStream) {
-
+                    // console.log(chunk);
                     const eventStr = chunk.split('\n\n');
                     for (let i = 0; i < eventStr.length; i++) {
                         const str = eventStr[i];
@@ -125,8 +123,6 @@ export function askToChatGptV3(query: string | undefined): Observable<string> {
                             const data: any = JSON.parse(jsonStr);
                             const thisContent = data.choices[0].delta?.content || '';
                             content += thisContent;
-                            console.clear();
-                            console.log(content);
                             observer.next(thisContent);
                         }
                     }

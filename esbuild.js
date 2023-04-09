@@ -47,6 +47,19 @@ const cssConfig = {
     entryPoints: ["./src/style.css"],
     outfile: "./out/style.css",
 };
+const imgConfig = {
+    ...baseConfig,
+    loader: {
+        ".png": "file",
+        ".jpg": "file",
+        ".jpeg": "file",
+        ".svg": "file",
+        ".gif": "file",
+      },
+    //   assetNames: "[dir]/[name]",
+     entryPoints: ["./src/images/chat-gpt-logo-2.jpeg"],
+     outfile: "./out",
+};
 
 (async () => {
     const args = process.argv.slice(2);
@@ -66,11 +79,16 @@ const cssConfig = {
                 ...cssConfig,
                 ...watchConfig,
             });
+            await build({
+                ...imgConfig,
+                ...watchConfig,
+            });
             console.log("[watch] build finished");
         } else {
             await build(extensionConfig);
             await build(webviewConfig);
             await build(cssConfig);
+            await build(imgConfig);
             console.log("build complete");
         }
 

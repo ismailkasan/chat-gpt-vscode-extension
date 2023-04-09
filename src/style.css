@@ -1,16 +1,38 @@
-
-
 .text-area {
     width: 100%;
     min-width: 300px;
     min-height: auto;
 }
 
-.flex-container{
+.flex-container {
     display: flex;
     flex-direction: row;
     justify-content: start;
     align-items: center;
     gap: 10px;
     margin-top: 10px;
+}
+
+.code {
+    white-space: pre-wrap;
+}
+
+.danger {
+    color: #fff;
+    background-color: #d9534f;
+    border-color: #d43f3a
+}
+
+.flex-container-logo {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    align-items: center;
+    gap: 2px;
+    margin-top: 10px;
+}
+
+.logo-image {
+    border-radius: 12px;
+    width: 24px;
 }
