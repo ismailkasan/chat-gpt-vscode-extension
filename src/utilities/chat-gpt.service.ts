@@ -2,6 +2,8 @@ import { fetch } from 'undici';
 import { TextDecoderStream } from 'node:stream/web';
 import { Observable } from 'rxjs';
 
+const API_KEY = 'your api key';
+
 export async function askToChatGpt(query: string | undefined) {
     try {
         // 👇️ const response: Response
@@ -14,7 +16,7 @@ export async function askToChatGpt(query: string | undefined) {
             }),
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: 'Bearer YOU_API_KEY',
+                Authorization: 'Bearer '+ API_KEY,
             },
         });
 
@@ -54,7 +56,7 @@ export async function askToChatGptV2(query: string | undefined) {
             }),
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: 'Bearer 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',
+                Authorization: 'Bearer '+ API_KEY,
             },
         });
 
@@ -104,7 +106,7 @@ export function askToChatGptV3(query: string | undefined): Observable<string> {
             }),
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: 'Bearer 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',
+                Authorization: 'Bearer '+ API_KEY,
             },
         });
 
