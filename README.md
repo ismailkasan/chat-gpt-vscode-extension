@@ -20,25 +20,28 @@ Ensure that you've read through the extensions guidelines and follow the best pr
 
 * [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
 
-## Working with Markdown
+## Using Extnsion
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+You can open chat bot with shortcut below:
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+* Open comman palette (`Ctrl+Shift+p`).
 
-## For more information
-* First step; open command palette with (`Ctrl+Shift+p`).
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/command.png?raw=true)
 
-* Then; set api key.
+* Set api key.
+
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/extension.png?raw=true)
 
+## For more information
+
 * Example 1
+
+
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/extension-1.png?raw=true)
 
 * Example 2
+
+
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/extension-2.png?raw=true)
 
 * [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
