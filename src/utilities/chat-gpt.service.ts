@@ -2,6 +2,12 @@ import { fetch } from 'undici';
 import { TextDecoderStream } from 'node:stream/web';
 import { Observable } from 'rxjs';
 
+/**
+ * Create asnyc request to ChatGpt api gets a response.
+ * @param question is that want to ask to ChatGpt.
+ * @param apikey of ChatGpt.
+ * @returns 
+ */
 export async function askToChatGpt(query: string | undefined, apikey: string) {
     try {
         // 👇️ const response: Response
@@ -39,6 +45,12 @@ export async function askToChatGpt(query: string | undefined, apikey: string) {
     }
 }
 
+/**
+ * Create asnyc request to ChatGpt api and gets straem.
+ * @param question is that want to ask to ChatGpt.
+ * @param apikey of ChatGpt.
+ * @returns 
+ */
 export function askToChatGptAsStream(query: string | undefined, apikey: string): Observable<string> {
 
     return new Observable<string>(observer => {

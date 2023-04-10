@@ -1,5 +1,15 @@
-import { provideVSCodeDesignSystem, vsCodeButton, vsCodeTextArea, vsCodeDivider, vsCodeProgressRing, vsCodeTextField, Button, ProgressRing, TextArea, TextField } from "@vscode/webview-ui-toolkit";
-import { send } from "node:process";
+import {
+    provideVSCodeDesignSystem,
+    vsCodeButton,
+    vsCodeTextArea,
+    vsCodeDivider,
+    vsCodeProgressRing,
+    vsCodeTextField,
+    Button,
+    ProgressRing,
+    TextArea,
+    TextField
+} from "@vscode/webview-ui-toolkit";
 
 /**
  * Register "@vscode/webview-ui-toolkit" component to vscode design system.
