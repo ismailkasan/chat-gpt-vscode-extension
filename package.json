@@ -36,6 +36,31 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+			"activitybar": [
+				{
+					"id": "chat-gpt-view",
+					"title": "Chat Gpt",
+					"icon": "src/images/activity-bar-logo.svg"
+				}
+			]
+		},
+    "views": {
+			"chat-gpt-view": [
+				{
+					"id": "chat-gpt-view-id",
+					"name": "Chat Gpt View",
+					"icon": "src/images/activity-bar-logo.svg",
+					"contextualTitle": "Chat Gpt view-2"
+				}
+			]		
+		},
+    "viewsWelcome": [
+      {
+        "view": "chat-gpt-view-id",
+        "contents": "More information about OpenAi and ChatGpt [please visit](https://openai.com/).\n[Open Chat Editor](command:vscode-chat-gpt.start)"
+      }
+    ],
     "commands": [
       {
         "command": "vscode-chat-gpt.start",

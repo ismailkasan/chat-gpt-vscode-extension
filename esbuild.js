@@ -55,10 +55,9 @@ const imgConfig = {
         ".jpeg": "file",
         ".svg": "file",
         ".gif": "file",
-      },
-    //   assetNames: "[dir]/[name]",
-    //  entryPoints: ["./src/images/chat-gpt-logo-2.jpeg"],
-      outfile: "./out",
+    },
+    // entryPoints: ["./src/images/dep.svg"],
+    // outfile: "./out/dep.svg",
 };
 
 const testConfig = {
