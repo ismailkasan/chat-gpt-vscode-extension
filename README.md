@@ -2,24 +2,9 @@
 
 This is a chat bot that uses ChatGpt Api. After set your ChatGpt Api key you can use the chat bot.
 
-## Extension Settings
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
 ## Release Notes
 
 Your vscode has to be upper or equel 1.77.0 version.
-
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
 ## Using Extnsion
 
 You can open chat bot with shortcut below:
