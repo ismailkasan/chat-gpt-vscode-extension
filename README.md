@@ -8,7 +8,7 @@ Describe specific features of your extension including screenshots of your exten
 
 For example if there is an image subfolder under your extension project workspace:
 
-![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/[main]/src/images/command.png?raw=true)
+![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/command.png?raw=true)
 \!\[feature X\]\(images/command.png\)
 \!\[feature X\]\(images/extension.png\)
 \!\[feature X\]\(images/extension-1.png\)
