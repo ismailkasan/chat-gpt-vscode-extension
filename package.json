@@ -3,7 +3,7 @@
   "displayName": "vscode-chat-gpt",
   "description": "Extension is a chat bot that uses ChatGpt Api.",
   "version": "0.0.1",
-  "publisher": "ismail Kaşan",
+  "publisher": "ikasann-self",
   "bugs": {
     "url": "https://github.com/ismailkasan/chat-gpt-vscode-extension/issues",
     "email": "ismailkasan63@gmail.com"
