@@ -58,9 +58,18 @@ const imgConfig = {
       },
     //   assetNames: "[dir]/[name]",
     //  entryPoints: ["./src/images/chat-gpt-logo-2.jpeg"],
-    
       outfile: "./out",
 };
+
+const testConfig = {
+    ...baseConfig,
+    // target: "es2020",
+    // format: "esm",
+    platform: 'node',
+    entryPoints: ["./src/test/runTest.ts"],
+    outfile: "./out/test/runTest.js",
+};
+
 
 (async () => {
     const args = process.argv.slice(2);
@@ -84,12 +93,17 @@ const imgConfig = {
                 ...imgConfig,
                 ...watchConfig,
             });
+            await build({
+                ...testConfig,
+                ...watchConfig,
+            });
             console.log("[watch] build finished");
         } else {
             await build(extensionConfig);
             await build(webviewConfig);
             await build(cssConfig);
             await build(imgConfig);
+            await build(testConfig);
             console.log("build complete");
         }
 

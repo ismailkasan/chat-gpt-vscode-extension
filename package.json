@@ -1,15 +1,39 @@
 {
   "name": "vscode-chat-gpt",
   "displayName": "vscode-chat-gpt",
-  "description": "",
+  "description": "Extension is a chat bot that uses ChatGpt Api.",
   "version": "0.0.1",
+  "publisher": "ismail Kaşan",
+  "bugs": {
+    "url": "https://github.com/ismailkasan/chat-gpt-vscode-extension/issues",
+    "email": "ismailkasan63@gmail.com"
+  },
+  "homepage": "https://github.com/ismailkasan/chat-gpt-vscode-extension/main/README.md",
+  "repository": {
+    "url": "https://github.com/ismailkasan/chat-gpt-vscode-extension",
+    "type": "git"
+  },
+  "keywords": [
+    "openai",
+    "chatgpt",
+    "gpt",
+    "chat",
+    "ai"
+  ],
+  "icon": "out/chat-gpt-logo-2-HBRQ6ZBV.jpeg",
+  "galleryBanner": {
+    "color": "#0000FF",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.77.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:extension.start"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
