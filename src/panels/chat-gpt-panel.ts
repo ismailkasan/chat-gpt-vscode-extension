@@ -1,15 +1,23 @@
 import * as vscode from "vscode";
 import { getUri } from "../utilities/get-uri";
 import { getNonce } from "../utilities/get-nonce";
-import { askToChatGptV3 } from "../utilities/chat-gpt.service";
+import { askToChatGptAsStream } from "../utilities/chat-gpt.service";
 
-
+/**
+ * Webview panel class
+ */
 export class ChatGptPanel {
     public static currentPanel: ChatGptPanel | undefined;
     private readonly _panel: vscode.WebviewPanel;
     private _disposables: vscode.Disposable[] = [];
     private _context: vscode.ExtensionContext;
 
+    /**
+     * 
+     * @param context is a parameter that is typeoff vscode.ExtensionContext.
+     * @param panel is a parameter thatis typeoff vscode.WebviewPanel.
+     * @param extensionUri is a string parameter of vscode.Uri.
+     */
     private constructor(context: vscode.ExtensionContext, panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
         this._context = context;
         this._panel = panel;
@@ -17,23 +25,27 @@ export class ChatGptPanel {
         this._panel.webview.html = this._getWebviewContent(this._panel.webview, extensionUri);
         this._setWebviewMessageListener(this._panel.webview);
 
-        // only read
+        // Read the api key from globalState and send it to webview
         const existApiKey = this.apiKey(undefined);
         this._panel.webview.postMessage({ command: 'api-key-exist', data: existApiKey });
     }
 
-
+    /**
+     * Render method of webview that is triggered from "extension.ts" file.
+     * @param context context is a parameter that is typeoff vscode.ExtensionContext.
+     */
     public static render(context: vscode.ExtensionContext) {
 
+        // if exist show 
         if (ChatGptPanel.currentPanel) {
             ChatGptPanel.currentPanel._panel.reveal(vscode.ViewColumn.One);
-        } else {
+        } else { // if not exist create a new one.
 
             const extensionUri: vscode.Uri = context.extensionUri;
             const panel = vscode.window.createWebviewPanel("vscode-chat-gpt", "ChatGpt", vscode.ViewColumn.One, {
-                // Enable javascript in the webview
+                // Enable javascript in the webview.
                 enableScripts: true,
-                // Restrict the webview to only load resources from the `out` directory
+                // Restrict the webview to only load resources from the `out` directory.
                 localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'out')]
             });
 
@@ -41,7 +53,9 @@ export class ChatGptPanel {
         }
     }
 
-
+    /**
+     * Dispose panel.
+     */
     public dispose() {
         ChatGptPanel.currentPanel = undefined;
 
@@ -55,6 +69,10 @@ export class ChatGptPanel {
         }
     }
 
+    /**
+     * Add listeners to catch messages from webview js.
+     * @param webview is a parameter that is typeoff vscode.Webview.
+     */
     private _setWebviewMessageListener(webview: vscode.Webview) {
         webview.onDidReceiveMessage(
             (message: any) => {
@@ -63,13 +81,17 @@ export class ChatGptPanel {
                 switch (command) {
                     case "press-ask-button":
                         const existApiKey = this.apiKey(undefined);
-                        askToChatGptV3(message.text, existApiKey).subscribe(answer => {
-                            this._panel.webview.postMessage({ command: 'answer', data: answer });
-                        });
+                        if (existApiKey == undefined || existApiKey == null || existApiKey == '') {
+                            vscode.window.showInformationMessage('Please add your ChatGpt api key!');
+                        } {
+                            askToChatGptAsStream(message.text, existApiKey).subscribe(answer => {
+                                this._panel.webview.postMessage({ command: 'answer', data: answer });
+                            });
+                        }
                         return;
                     case "press-save-api-key-button":
                         const key = this.apiKey(message.text);
-                        if (key != undefined) {
+                        if (key !== undefined) {
                             const responseMessage = `${key} : api key saved successfully.`;
                             vscode.window.showInformationMessage(responseMessage);
                         }
@@ -81,7 +103,15 @@ export class ChatGptPanel {
         );
     }
 
+    /**
+     * 
+     * @param webview is a parameter that is typeoff vscode.Webview.
+     * @param extensionUri is a string parameter of vscode.Uri.
+     * @returns 
+     */
     private _getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
+
+        // get uris from out directory based on vscode.extensionUri
         const webviewUri = getUri(webview, extensionUri, ["out", "webview.js"]);
         const nonce = getNonce();
         const stylesMainPath = getUri(webview, extensionUri, ['out', 'style.css']);
@@ -126,13 +156,17 @@ export class ChatGptPanel {
           </body>
         </html>
         `;
-
     }
 
+    /**
+     * 
+     * @param apikeyValue is a string parameter of ChatGpt api key.
+     * @returns api key that is saved.
+     */
     private apiKey(apikeyValue: string | undefined): string {
         const state = this.stateManager(this._context);
 
-        if (apikeyValue != undefined) {
+        if (apikeyValue !== undefined) {
             state.write({
                 apiKey: apikeyValue
             });
@@ -142,20 +176,25 @@ export class ChatGptPanel {
         return apiKeyApplied as string;
     }
 
+    /**
+     * State Manager has read and write methods for api key. This methods set and get the api key from context.globalState.
+     * @param context is a parameter that is typeoff vscode.ExtensionContext.
+     * @returns void.
+     */
     private stateManager(context: vscode.ExtensionContext) {
         return {
             read,
             write
-        }
+        };
 
         function read() {
             return {
                 apiKeyApplied: context.globalState.get('apiKey')
-            }
+            };
         }
 
         function write(newState: any) {
-            context.globalState.update('apiKey', newState.apiKey)
+            context.globalState.update('apiKey', newState.apiKey);
         }
     }
 }
