@@ -57,7 +57,7 @@ const imgConfig = {
         ".gif": "file",
     },
     // entryPoints: ["./src/images/dep.svg"],
-    // outfile: "./out/dep.svg",
+     outdir: "./out",
 };
 
 const testConfig = {
