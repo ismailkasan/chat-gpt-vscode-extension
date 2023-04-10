@@ -33,6 +33,10 @@
 }
 
 .logo-image {
-    border-radius: 12px;
-    width: 24px;
+    border-radius: 8px;
+    width: 16px;
+}
+
+.answer-header {
+    margin-top: -5px;
 }

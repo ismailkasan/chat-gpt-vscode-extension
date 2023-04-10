@@ -45,6 +45,7 @@ export async function askToChatGpt(query: string | undefined, apikey: string) {
     }
 }
 
+
 /**
  * Create asnyc request to ChatGpt api and gets straem.
  * @param question is that want to ask to ChatGpt.

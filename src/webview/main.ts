@@ -66,6 +66,9 @@ function main() {
                 // Set disable api key save button. 
                 apiKeySaveButton.disabled = true;
                 break;
+            case 'error':
+                hideProgressRing();
+                break;
         }
     });
 }
@@ -121,6 +124,12 @@ function handleSaveApiKeyClick() {
  * Handle clear api key click event.
  */
 function handleClearApiKeyClick() {
+
+    vscode.postMessage({
+        command: "press-clear-api-key-button",
+        text: apiKeyTextField.value,
+    });
+
     // Clear api key text field.
     apiKeyTextField.value = '';
 

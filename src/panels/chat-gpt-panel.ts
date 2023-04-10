@@ -26,7 +26,7 @@ export class ChatGptPanel {
         this._setWebviewMessageListener(this._panel.webview);
 
         // Read the api key from globalState and send it to webview
-        const existApiKey = this.apiKey(undefined);
+        const existApiKey = this.getApiKey();
         this._panel.webview.postMessage({ command: 'api-key-exist', data: existApiKey });
     }
 
@@ -80,9 +80,10 @@ export class ChatGptPanel {
 
                 switch (command) {
                     case "press-ask-button":
-                        const existApiKey = this.apiKey(undefined);
+                        const existApiKey = this.getApiKey();
                         if (existApiKey == undefined || existApiKey == null || existApiKey == '') {
                             vscode.window.showInformationMessage('Please add your ChatGpt api key!');
+                            this._panel.webview.postMessage({ command: 'error', data: '' });
                         } {
                             askToChatGptAsStream(message.text, existApiKey).subscribe(answer => {
                                 this._panel.webview.postMessage({ command: 'answer', data: answer });
@@ -90,11 +91,17 @@ export class ChatGptPanel {
                         }
                         return;
                     case "press-save-api-key-button":
-                        const key = this.apiKey(message.text);
-                        if (key !== undefined) {
-                            const responseMessage = `${key} : api key saved successfully.`;
-                            vscode.window.showInformationMessage(responseMessage);
-                        }
+                        this.setApiKey(message.text);
+                        const responseMessage = `${message.text} : api key saved successfully.`;
+                        vscode.window.showInformationMessage(responseMessage);
+                        return;
+
+                    case "press-clear-api-key-button":
+                        this.setApiKey('');
+
+                        const claerResponseMessage = 'api key cleared successfully';
+                        vscode.window.showInformationMessage(claerResponseMessage);
+
                         return;
                 }
             },
@@ -141,11 +148,9 @@ export class ChatGptPanel {
               <span>
                 <img class="logo-image" src="${logoMainPath}">
               </span>
-              <span> Answer : </span>
+              <span class="answer-header"> Answer : </span>
             </div>
-            <pre>
-            <code class="code" id="answers-id"></code>
-            </pre>
+            <pre><code class="code" id="answers-id"></code></pre>
             <vscode-text-area class="text-area" id="question-text-id" cols="100" autofocus>Question</vscode-text-area>
             <div class="flex-container">
               <vscode-button id="ask-button-id">Ask</vscode-button>
@@ -159,11 +164,11 @@ export class ChatGptPanel {
     }
 
     /**
-     * 
+     * Set api key into context.globalState
      * @param apikeyValue is a string parameter of ChatGpt api key.
-     * @returns api key that is saved.
+     * @returns void.
      */
-    private apiKey(apikeyValue: string | undefined): string {
+    private setApiKey(apikeyValue: string | undefined) {
         const state = this.stateManager(this._context);
 
         if (apikeyValue !== undefined) {
@@ -171,6 +176,14 @@ export class ChatGptPanel {
                 apiKey: apikeyValue
             });
         }
+    }
+
+    /**
+     * Get api key from context.globalState.
+     * @returns string api key.
+     */
+    private getApiKey(): string {
+        const state = this.stateManager(this._context);
 
         const { apiKeyApplied } = state.read();
         return apiKeyApplied as string;
