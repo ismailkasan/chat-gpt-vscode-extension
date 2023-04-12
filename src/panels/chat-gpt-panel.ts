@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { getUri } from "../utilities/get-uri";
 import { getNonce } from "../utilities/get-nonce";
 import { askToChatGptAsStream } from "../utilities/chat-gpt.service";
+import { getApiKey, getHistoryQuestion, setApiKey, setLastQuestion } from "./state-manager";
 
 /**
  * Webview panel class
@@ -26,8 +27,14 @@ export class ChatGptPanel {
         this._setWebviewMessageListener(this._panel.webview);
 
         // Read the api key from globalState and send it to webview
-        const existApiKey = this.getApiKey();
+        const existApiKey = getApiKey(context);
         this._panel.webview.postMessage({ command: 'api-key-exist', data: existApiKey });
+
+        /// register click history event command
+        context.subscriptions.push(
+            vscode.commands.registerCommand('vscode-chat-gpt.clickedHistoryQuestion', () => {
+                this.clickedHistoryQuestion(context);
+            }));
     }
 
     /**
@@ -80,29 +87,20 @@ export class ChatGptPanel {
 
                 switch (command) {
                     case "press-ask-button":
-                        const existApiKey = this.getApiKey();
-                        if (existApiKey == undefined || existApiKey == null || existApiKey == '') {
-                            vscode.window.showInformationMessage('Please add your ChatGpt api key!');
-                            this._panel.webview.postMessage({ command: 'error', data: '' });
-                        } {
-                            askToChatGptAsStream(message.text, existApiKey).subscribe(answer => {
-                                this._panel.webview.postMessage({ command: 'answer', data: answer });
-                            });
-                        }
+                        this.askToChatGpt(message.data);
                         return;
                     case "press-save-api-key-button":
-                        this.setApiKey(message.text);
-                        const responseMessage = `${message.text} : api key saved successfully.`;
+                        setApiKey(this._context, message.data);
+                        const responseMessage = `${message.data} : api key saved successfully.`;
                         vscode.window.showInformationMessage(responseMessage);
                         return;
 
                     case "press-clear-api-key-button":
-                        this.setApiKey('');
-
+                        setApiKey(this._context, '');
                         const claerResponseMessage = 'api key cleared successfully';
                         vscode.window.showInformationMessage(claerResponseMessage);
-
                         return;
+
                 }
             },
             undefined,
@@ -121,8 +119,8 @@ export class ChatGptPanel {
         // get uris from out directory based on vscode.extensionUri
         const webviewUri = getUri(webview, extensionUri, ["out", "webview.js"]);
         const nonce = getNonce();
-        const stylesMainPath = getUri(webview, extensionUri, ['out', 'style.css']);
-        const logoMainPath = getUri(webview, extensionUri, ['out', 'chat-gpt-logo-2-HBRQ6ZBV.jpeg']);
+        const styleVSCodeUri  = getUri(webview,extensionUri, ['out/media', 'vscode.css']);
+        const logoMainPath = getUri(webview, extensionUri, ['out/media', 'chat-gpt-logo.jpeg']);
 
         // Tip: Install the es6-string-html VS Code extension to enable code highlighting below
         return /*html*/ `
@@ -132,7 +130,7 @@ export class ChatGptPanel {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
-            <link href="${stylesMainPath}" rel="stylesheet">
+            <link href="${styleVSCodeUri}" rel="stylesheet">
             <link rel="icon" type="image/jpeg" href="${logoMainPath}">
             <title>ChatGpt Assistant</title>
           </head>
@@ -163,51 +161,29 @@ export class ChatGptPanel {
         `;
     }
 
-    /**
-     * Set api key into context.globalState
-     * @param apikeyValue is a string parameter of ChatGpt api key.
-     * @returns void.
-     */
-    private setApiKey(apikeyValue: string | undefined) {
-        const state = this.stateManager(this._context);
+    private addQuestion(lastQuestion: string): void {
+        setLastQuestion(this._context, lastQuestion);
+        vscode.commands.executeCommand('vscode-chat-gpt.addQuestion');
+    }
 
-        if (apikeyValue !== undefined) {
-            state.write({
-                apiKey: apikeyValue
+    public clickedHistoryQuestion(context: vscode.ExtensionContext) {
+        const historyQuestion = getHistoryQuestion(context);       
+        this.askToChatGpt(historyQuestion);
+
+        this._panel.webview.postMessage({ command: 'history-question-sended', data: historyQuestion });
+    }
+
+    private askToChatGpt(question: string) {
+        const existApiKey = getApiKey(this._context);
+        if (existApiKey == undefined || existApiKey == null || existApiKey == '') {
+            vscode.window.showInformationMessage('Please add your ChatGpt api key!');          
+        } {
+            askToChatGptAsStream(question, existApiKey).subscribe(answer => {
+                this._panel.webview.postMessage({ command: 'answer', data: answer });
             });
-        }
-    }
 
-    /**
-     * Get api key from context.globalState.
-     * @returns string api key.
-     */
-    private getApiKey(): string {
-        const state = this.stateManager(this._context);
-
-        const { apiKeyApplied } = state.read();
-        return apiKeyApplied as string;
-    }
-
-    /**
-     * State Manager has read and write methods for api key. This methods set and get the api key from context.globalState.
-     * @param context is a parameter that is typeoff vscode.ExtensionContext.
-     * @returns void.
-     */
-    private stateManager(context: vscode.ExtensionContext) {
-        return {
-            read,
-            write
-        };
-
-        function read() {
-            return {
-                apiKeyApplied: context.globalState.get('apiKey')
-            };
-        }
-
-        function write(newState: any) {
-            context.globalState.update('apiKey', newState.apiKey);
+              // add question command form side bar view
+              this.addQuestion(question);          
         }
     }
 }

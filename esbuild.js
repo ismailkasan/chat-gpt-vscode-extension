@@ -1,11 +1,21 @@
 // file: esbuild.js
 
 const { build } = require("esbuild");
+const copyStaticFiles = require('esbuild-copy-static-files')
 
 const baseConfig = {
     bundle: true,
     minify: process.env.NODE_ENV === "production",
     sourcemap: process.env.NODE_ENV !== "production",
+    plugins: [copyStaticFiles({
+        src: './src/media',
+        dest: './out/media',
+        dereference: true,
+        errorOnExist: false,
+        // filter: EXPLAINED_IN_MORE_DETAIL_BELOW,
+        preserveTimestamps: true,
+        recursive: true,
+      })],
 };
 
 const extensionConfig = {
@@ -17,6 +27,31 @@ const extensionConfig = {
     outfile: "./out/extension.js",
     external: ["vscode"],
 };
+
+const webviewConfig = {
+    ...baseConfig,
+    target: "es2020",
+    format: "esm",
+    entryPoints: ["./src/webview/main.ts"],
+    outfile: "./out/webview.js",
+};
+const sideBarViewConfig = {
+    ...baseConfig,
+    target: "es2020",
+    format: "esm",
+    entryPoints: ["./src/view/side-bar-view.ts"],
+    outfile: "./out/side-bar-view.js",
+};
+
+const testConfig = {
+    ...baseConfig,
+    // target: "es2020",
+    // format: "esm",
+    platform: 'node',
+    entryPoints: ["./src/test/runTest.ts"],
+    outfile: "./out/test/runTest.js",
+};
+
 
 const watchConfig = {
     watch: {
@@ -34,42 +69,6 @@ const watchConfig = {
 };
 
 
-const webviewConfig = {
-    ...baseConfig,
-    target: "es2020",
-    format: "esm",
-    entryPoints: ["./src/webview/main.ts"],
-    outfile: "./out/webview.js",
-};
-
-const cssConfig = {
-    ...baseConfig,
-    entryPoints: ["./src/style.css"],
-    outfile: "./out/style.css",
-};
-const imgConfig = {
-    ...baseConfig,
-    loader: {
-        ".png": "file",
-        ".jpg": "file",
-        ".jpeg": "file",
-        ".svg": "file",
-        ".gif": "file",
-    },
-    // entryPoints: ["./src/images/dep.svg"],
-     outdir: "./out",
-};
-
-const testConfig = {
-    ...baseConfig,
-    // target: "es2020",
-    // format: "esm",
-    platform: 'node',
-    entryPoints: ["./src/test/runTest.ts"],
-    outfile: "./out/test/runTest.js",
-};
-
-
 (async () => {
     const args = process.argv.slice(2);
     try {
@@ -83,15 +82,11 @@ const testConfig = {
             await build({
                 ...webviewConfig,
                 ...watchConfig,
-            });
+            });          
             await build({
-                ...cssConfig,
+                ...sideBarViewConfig,
                 ...watchConfig,
-            });
-            await build({
-                ...imgConfig,
-                ...watchConfig,
-            });
+            });          
             await build({
                 ...testConfig,
                 ...watchConfig,
@@ -100,8 +95,7 @@ const testConfig = {
         } else {
             await build(extensionConfig);
             await build(webviewConfig);
-            await build(cssConfig);
-            await build(imgConfig);
+            await build(sideBarViewConfig);
             await build(testConfig);
             console.log("build complete");
         }

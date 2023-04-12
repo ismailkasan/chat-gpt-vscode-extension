@@ -43,6 +43,13 @@ function main() {
     clearButton?.addEventListener("click", handleClearClick);
     apiKeySaveButton?.addEventListener("click", handleSaveApiKeyClick);
     apiKeyClearButton?.addEventListener("click", handleClearApiKeyClick);
+    questionTextArea.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            // Trigger the button element with a click
+            handleAskClick();
+        }
+    });
 
     // Handle messages sent from the extension to the webview
     window.addEventListener('message', event => {
@@ -66,6 +73,10 @@ function main() {
                 // Set disable api key save button. 
                 apiKeySaveButton.disabled = true;
                 break;
+            case 'history-question-sended':
+                questionTextArea.value = message.data;
+                showProgressRing();
+                break;
             case 'error':
                 hideProgressRing();
                 break;
@@ -77,10 +88,11 @@ function main() {
  * Handle ask button click event.
  */
 function handleAskClick() {
+
     // Send messages to Panel.
     vscode.postMessage({
         command: "press-ask-button",
-        text: questionTextArea.value,
+        data: questionTextArea.value,
     });
 
     // Clear answer filed.
@@ -110,7 +122,7 @@ function handleClearClick() {
 function handleSaveApiKeyClick() {
     vscode.postMessage({
         command: "press-save-api-key-button",
-        text: apiKeyTextField.value,
+        data: apiKeyTextField.value,
     });
 
     // Set disable api key text field. 
@@ -127,7 +139,7 @@ function handleClearApiKeyClick() {
 
     vscode.postMessage({
         command: "press-clear-api-key-button",
-        text: apiKeyTextField.value,
+        data: apiKeyTextField.value,
     });
 
     // Clear api key text field.

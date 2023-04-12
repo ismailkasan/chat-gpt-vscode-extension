@@ -28,10 +28,7 @@ export async function askToChatGpt(query: string | undefined, apikey: string) {
             throw new Error(`Error! status: ${response.status}`);
         }
 
-        // 👇️ const result: CreateUserResponse
         const result: any = (await response.json());
-
-        console.log('result is: ', JSON.stringify(result, null, 4));
 
         return result.choices[0].message.content;
     } catch (error) {
@@ -75,7 +72,6 @@ export function askToChatGptAsStream(query: string | undefined, apikey: string):
             const textStream = res.body?.pipeThrough(new TextDecoderStream());
             if (textStream) {
                 for await (const chunk of textStream) {
-                    // console.log(chunk);
                     const eventStr = chunk.split('\n\n');
                     for (let i = 0; i < eventStr.length; i++) {
                         const str = eventStr[i];
