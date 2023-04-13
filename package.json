@@ -20,7 +20,7 @@
     "chat",
     "ai"
   ],
-  "icon": "out/chat-gpt-logo-2-HBRQ6ZBV.jpeg",
+  "icon": "out/media/chat-gpt-logo.jpeg",
   "galleryBanner": {
     "color": "#0000FF",
     "theme": "dark"
@@ -72,8 +72,8 @@
       {
         "viewType": "markdown.preview",
         "icon": {
-          "light": "./out/chat-gpt-logo-2-HBRQ6ZBV.jpeg",
-          "dark": "./out/chat-gpt-logo-2-HBRQ6ZBV.jpeg"
+          "light": "./out/media/chat-gpt-logo.jpeg",
+          "dark": "./out/media/chat-gpt-logo.jpeg"
         }
       }
     ]
