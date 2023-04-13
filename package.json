@@ -2,7 +2,7 @@
   "name": "vscode-chat-gpt",
   "displayName": "vscode-chat-gpt",
   "description": "Extension is a chat bot that uses ChatGpt Api.",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "publisher": "ikasann-self",
   "bugs": {
     "url": "https://github.com/ismailkasan/chat-gpt-vscode-extension/issues",
@@ -58,16 +58,16 @@
       {
         "command": "vscode-chat-gpt.start",
         "title": "Ask to ChatGpt"
-      },
-      {
-				"command": "vscode-chat-gpt.addQuestion",
-				"title": "Add Question"
-			},
-      {
-				"command": "vscode-chat-gpt.clickedHistoryQuestion",
-				"title": "Clicked History Question"
-			}
+      }     
     ],
+    "menus": {
+      "commandPalette": [ 
+        {
+          "command": "vscode-chat-gpt.start", 
+          "when": "false"
+        }
+      ]
+    },
     "webviews": [
       {
         "viewType": "markdown.preview",

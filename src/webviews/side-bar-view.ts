@@ -1,44 +1,44 @@
 const vscode = acquireVsCodeApi();
 
+/**
+ * Add load event.
+ */
 window.addEventListener("load", main);
 
-const oldState: any = vscode.getState() || { conversations: [] };
+// Get search history from state.
+const oldState: any = vscode.getState() || { searchHistory: [] };
 
-let conversations: string[] = [];
-let iconUrl: any;
-if (oldState.conversations) {
-    conversations = oldState.conversations;
-    updateConversationsList();
+// declare an array for search history.
+let searchHistory: string[] = [];
+
+if (oldState.searchHistory) {
+    searchHistory = oldState.searchHistory;
+    updateHistoryList();
 }
 
 
-// Html element
+// Declare Html elements.
 const startChatButton = document.getElementById("start-chat-gpt-button");
-const clearButton = document.getElementById("clear-conversations-button");
+const clearButton = document.getElementById("clear-history-button");
 
 /**
  * Main function
  */
 function main() {
 
-    // Add the eventLsteners.
+    // Add eventLsteners of Html elements.
     startChatButton?.addEventListener("click", handleStartButtonClick);
     clearButton?.addEventListener("click", handleClearButtonClick);
 
-
-    // Handle messages sent from the extension to the webview
+    // Handle messages sent from the extension or panel to the webview
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
         switch (message.command) {
             case 'add-new-question-command':
                 {
-                    addConversation(message.data);
+                    addHistory(message.data);
                 }
                 break;
-            case 'conversation-icon-command':
-                iconUrl = message.data;
-                break;
-
             case 'error':
                 console.log(message);
                 break;
@@ -56,31 +56,35 @@ function handleStartButtonClick() {
         text: 'start-chat',
     });
 }
+
 /**
  * Handle clear button click event.
  */
 function handleClearButtonClick() {
-    conversations = [];
-    vscode.setState({ conversations: conversations });
-    updateConversationsList()
+    searchHistory = [];
+    vscode.setState({ searchHistory: searchHistory });
+    updateHistoryList()
 }
 
-
+/**
+ * Handle on click history question event.
+ */
 function onHistoryClicked(question: string) {
     vscode.postMessage({ command: 'history-question-command', data: question });
 }
 
+
 /**
- * @param {Array<{ value: string }>} colors
-*/
-function updateConversationsList() {
-    const ul = document.getElementById('conversations-id');
+ * Update history list.
+ */
+function updateHistoryList() {
+    const ul = document.getElementById('history-id');
 
     if (ul != null) {
         ul.textContent = '';
         let index = 0;
-        for (const conversation of conversations) {
-            if (conversation != undefined) {
+        for (const content of searchHistory) {
+            if (content != undefined) {
 
                 index++;
                 const spanContainer = document.createElement('span');
@@ -97,12 +101,11 @@ function updateConversationsList() {
                 spanContainer.appendChild(spanNumber);
 
                 const li = document.createElement('li');
-                li.className = 'color-entry';
-                li.textContent = conversation.length > 100 ? conversation.substring(0, 100) + '...' : conversation;
+                li.textContent = content.length > 50 ? content.substring(0, 50) + '...' : content;
                 li.addEventListener('click', () => {
-                    onHistoryClicked(conversation);
+                    onHistoryClicked(content);
                 });
-                li.title = conversation;
+                li.title = content;
                 li.style.cursor = 'pointer';
                 li.style.fontSize = '14px';
                 li.style.listStyleType = 'none';
@@ -114,22 +117,26 @@ function updateConversationsList() {
     }
 
     // Update the saved state
-    vscode.setState({ conversations: conversations });
+    vscode.setState({ searchHistory: searchHistory });
 
 }
 
-function addConversation(content: string) {
+/**
+ * Add last search to history.
+ * @param content :string
+ */
+function addHistory(content: string) {
     if (content != undefined) {
-        if (conversations.length < 10) {
-            if (!conversations.includes(content))
-                conversations.unshift(content);
+        if (searchHistory.length < 10) {
+            if (!searchHistory.includes(content))
+                searchHistory.unshift(content);
         }
-        if (conversations.length == 10) {
-            conversations.pop();
-            if (!conversations.includes(content)) {
-                conversations.unshift(content);
+        if (searchHistory.length == 10) {
+            searchHistory.pop();
+            if (!searchHistory.includes(content)) {
+                searchHistory.unshift(content);
             }
         }
     }
-    updateConversationsList();
+    updateHistoryList();
 }

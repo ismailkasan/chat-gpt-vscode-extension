@@ -1,6 +1,6 @@
 
 import * as vscode from 'vscode';
-import { ChatGptPanel } from './panels/chat-gpt-panel';
+import { ChatGptPanel } from './panels/main-view-panel';
 import { SideBarViewProvider } from './panels/side-bar-view-panel';
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -15,13 +15,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(SideBarViewProvider.viewType, provider));
 
-	context.subscriptions.push(
-		vscode.commands.registerCommand('vscode-chat-gpt.addQuestion', () => {
-			provider.addQuestion(context);
-		}));
-
 }
 
 export function deactivate() { }
-
-

@@ -32,14 +32,14 @@ const webviewConfig = {
     ...baseConfig,
     target: "es2020",
     format: "esm",
-    entryPoints: ["./src/webview/main.ts"],
-    outfile: "./out/webview.js",
+    entryPoints: ["./src/webviews/main-view.ts"],
+    outfile: "./out/mainview.js",
 };
 const sideBarViewConfig = {
     ...baseConfig,
     target: "es2020",
     format: "esm",
-    entryPoints: ["./src/view/side-bar-view.ts"],
+    entryPoints: ["./src/webviews/side-bar-view.ts"],
     outfile: "./out/side-bar-view.js",
 };
 

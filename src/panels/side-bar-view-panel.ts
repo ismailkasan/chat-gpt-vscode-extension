@@ -1,13 +1,9 @@
 import * as vscode from 'vscode';
-import { getNonce } from '../utilities/get-nonce';
-import { getUri } from '../utilities/get-uri';
-import { getlastQuestion, setHistoryQuestion } from './state-manager';
-
+import { addQuestionEventEmitter, FireClickHistoryQuestionEvent, getNonce, getUri } from '../utilities/utility.service';
 
 export class SideBarViewProvider implements vscode.WebviewViewProvider {
 
 	public static readonly viewType = 'chat-gpt-view-id';
-
 	private _view?: vscode.WebviewView;
 
 	constructor(
@@ -26,70 +22,90 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 			// Allow scripts in the webview
 			enableScripts: true,
 			localResourceRoots: [vscode.Uri.joinPath(this._extensionUri, 'out')]
-			// localResourceRoots: [
-			// 	this._extensionUri
-			// ]
 		};
 
 		webviewView.webview.html = this._getHtmlForWebview(webviewView.webview, this._extensionUri);
 
-		// const conversationIconUri = getUri(webviewView.webview, this._extensionUri, ["out/media", "conversation-icon.svg"]);	
-		// this._view.webview.postMessage({ command: 'conversation-icon-command', data: conversationIconUri });
-		// console.log('icon send command');
-		// console.log(conversationIconUri);
+		// Register message events that comes from the js.
+		this.addReceiveMessageEvents(webviewView.webview);
 
-		webviewView.webview.onDidReceiveMessage((message: any) => {
+		// Register message events that comes from the other panels.
+		this.addReceiveMessageEventsFromOtherPanel();
+
+	}
+
+	/**
+	 * Add listener for event comes from js.
+	 * @param webview :vscode.Webview
+	 */
+	private addReceiveMessageEvents(webview: vscode.Webview) {
+		webview.onDidReceiveMessage((message: any) => {
 			const command = message.command;
 			switch (command) {
 				case "start-chat-command":
 					this.startChatGptWebViewPanel();
 					break;
 				case "history-question-command":
-					this.clickedHistoryQuestion(message.data);
+					this.clickHistoryQuestion(message.data);
 					break;
 			}
 		},
-			undefined,
-
+			undefined
 		);
-
 	}
 
-	public addQuestion(context: vscode.ExtensionContext) {
-		const lastQuestion = getlastQuestion(context);
-		console.log('add question');
-		console.log(lastQuestion);
+	/**
+	 * Add listener for event comes from other panels.
+	 */
+	private addReceiveMessageEventsFromOtherPanel() {
+		addQuestionEventEmitter.on('addQuestion', (question: string) => {
+			this.sendAddQuestionCommand(question);
+		});
+	}
 
+	/**
+	 * Send "add-new-question-command" and data to side-bar-view.js
+	 * @param question :string
+	 */
+	public sendAddQuestionCommand(question: string) {
 		if (this._view) {
 			this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
-			this._view.webview.postMessage({ command: 'add-new-question-command', data: lastQuestion });
+			this._view.webview.postMessage({ command: 'add-new-question-command', data: question });
 		}
 	}
 
-	public clearColors() {
-		if (this._view) {
-			this._view.webview.postMessage({ type: 'clearColors' });
-		}
-	}
-
+	/**
+	 * start main panel. 
+	 */
 	private startChatGptWebViewPanel(): void {
 		vscode.commands.executeCommand('vscode-chat-gpt.start');
 	}
-	private clickedHistoryQuestion(historyQuestion: string): void {
-		setHistoryQuestion(this._context, historyQuestion);
+
+	/**
+	 * start main panel and send history question data.
+	 * @param historyQuestion :string
+	 */
+	private clickHistoryQuestion(historyQuestion: string): void {
 		vscode.commands.executeCommand('vscode-chat-gpt.start');
-		vscode.commands.executeCommand('vscode-chat-gpt.clickedHistoryQuestion');
+		setTimeout(() => {
+			// fire event in the communication service
+			FireClickHistoryQuestionEvent(historyQuestion);
+		}, 1000);
 	}
 
+	/**
+	 * Gets html content of webview.
+	 * @param webview: vscode.Webview
+	 * @param extensionUri: vscode.Uri
+	 * @returns string
+	 */
 	private _getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri) {
-
-		//	const model = chatGptModel!=undefined?chatGptModel:'gelmedi';
 
 		// Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
 		const scriptUri = getUri(webview, extensionUri, ["out", "side-bar-view.js"]);
+
 		// Do the same for the stylesheet.
-		// const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'out/media', 'vscode.css'));
-		const styleVSCodeUri = getUri(webview,extensionUri, ['out/media', 'vscode.css']);
+		const styleVSCodeUri = getUri(webview, extensionUri, ['out/media', 'vscode.css']);
 
 		// Use a nonce to only allow a specific script to be run.
 		const nonce = getNonce();
@@ -105,21 +121,18 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 					(See the 'webview-sample' extension sample for img-src content security policy examples)
 				-->
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} https:; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
-
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-				<link href="${styleVSCodeUri}" rel="stylesheet">
-			
-				<title>Cat Colors</title>
+				<link href="${styleVSCodeUri}" rel="stylesheet">			
+				<title>Panel</title>
 			</head>
 			<body>
 
 			<div class="flex-container">
 			<button id="start-chat-gpt-button">New Chat</button>
-			<button id="clear-conversations-button" class="danger" >Clear History</button>
+			<button id="clear-history-button" class="danger" >Clear History</button>
 			</div>
 			<p class="chat-history">Chat History</p>
-			<ul id="conversations-id"  class="color-list">
+			<ul id="history-id">
 			</ul>
 			
 			<script nonce="${nonce}" src="${scriptUri}"></script>
@@ -127,5 +140,4 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 			</body>
 			</html>`;
 	}
-
 }

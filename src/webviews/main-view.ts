@@ -18,10 +18,10 @@ provideVSCodeDesignSystem().register(vsCodeButton(), vsCodeTextArea(), vsCodeDiv
 
 const vscode = acquireVsCodeApi();
 
+// Add load event listener.
 window.addEventListener("load", main);
 
-
-// Html element
+// Declare Html elements
 const questionTextArea = document.getElementById("question-text-id") as TextArea;
 const apiKeyTextField = document.getElementById("api-key-text-field-id") as TextField;
 const answer = document.getElementById("answers-id") as HTMLElement;
@@ -51,37 +51,44 @@ function main() {
         }
     });
 
-    // Handle messages sent from the extension to the webview
-    window.addEventListener('message', event => {
-        const message = event.data; // The json data that the extension sent
-        switch (message.command) {
+    try {
+        // Handle messages sent from the extension to the webview
+        window.addEventListener('message', event => {
+            const message = event.data; // The json data that the extension sent
+            switch (message.command) {
 
-            case 'answer':
-                hideProgressRing();
-                // Append answer.
-                const data = document.createTextNode(message.data);
-                answer?.appendChild(data);
-                break;
-            case 'api-key-exist':
-                // Append api key.
-                const apiKey = message.data;
-                apiKeyTextField.value = apiKey;
+                case 'answer':
+                    hideProgressRing();
+                    // Append answer.
+                    const data = document.createTextNode(message.data);
+                    answer?.appendChild(data);
+                    break;
+                case 'api-key-exist':
+                    // Append api key.
+                    const apiKey = message.data;
+                    apiKeyTextField.value = apiKey;
 
-                // Set disable api key text field. 
-                apiKeyTextField.disabled = true;
+                    // Set disable api key text field. 
+                    apiKeyTextField.disabled = true;
 
-                // Set disable api key save button. 
-                apiKeySaveButton.disabled = true;
-                break;
-            case 'history-question-sended':
-                questionTextArea.value = message.data;
-                showProgressRing();
-                break;
-            case 'error':
-                hideProgressRing();
-                break;
-        }
-    });
+                    // Set disable api key save button. 
+                    apiKeySaveButton.disabled = true;
+                    break;
+                case 'history-question-sended':
+                    questionTextArea.value = message.data;
+                    answer.innerHTML = '';
+
+                    showProgressRing();
+                    break;
+                case 'error':
+                    hideProgressRing();
+                    break;
+            }
+        });
+    } catch (err: any) {
+        console.log('errrr js');
+        console.log(err);
+    }
 }
 
 /**

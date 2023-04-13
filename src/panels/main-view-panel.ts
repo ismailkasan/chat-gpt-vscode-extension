@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
-import { getUri } from "../utilities/get-uri";
-import { getNonce } from "../utilities/get-nonce";
-import { askToChatGptAsStream } from "../utilities/chat-gpt.service";
-import { getApiKey, getHistoryQuestion, setApiKey, setLastQuestion } from "./state-manager";
+import { EmitAddQuestionEvent, clickHistoryQuestionEventEmitter, getApiKey, getNonce, getUri, setApiKey } from "../utilities/utility.service";
+import { askToChatGptAsStream } from "../utilities/chat-gpt-api.service";
 
 /**
  * Webview panel class
@@ -14,10 +12,10 @@ export class ChatGptPanel {
     private _context: vscode.ExtensionContext;
 
     /**
-     * 
-     * @param context is a parameter that is typeoff vscode.ExtensionContext.
-     * @param panel is a parameter thatis typeoff vscode.WebviewPanel.
-     * @param extensionUri is a string parameter of vscode.Uri.
+     * Constructor
+     * @param context :vscode.ExtensionContext.
+     * @param panel :vscode.WebviewPanel.
+     * @param extensionUri :vscode.Uri.
      */
     private constructor(context: vscode.ExtensionContext, panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
         this._context = context;
@@ -25,29 +23,25 @@ export class ChatGptPanel {
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
         this._panel.webview.html = this._getWebviewContent(this._panel.webview, extensionUri);
         this._setWebviewMessageListener(this._panel.webview);
+        this.addReceiveMessageEventsFromOtherPanels();
 
         // Read the api key from globalState and send it to webview
         const existApiKey = getApiKey(context);
         this._panel.webview.postMessage({ command: 'api-key-exist', data: existApiKey });
-
-        /// register click history event command
-        context.subscriptions.push(
-            vscode.commands.registerCommand('vscode-chat-gpt.clickedHistoryQuestion', () => {
-                this.clickedHistoryQuestion(context);
-            }));
     }
 
     /**
      * Render method of webview that is triggered from "extension.ts" file.
-     * @param context context is a parameter that is typeoff vscode.ExtensionContext.
+     * @param context :vscode.ExtensionContext.
      */
     public static render(context: vscode.ExtensionContext) {
 
         // if exist show 
         if (ChatGptPanel.currentPanel) {
             ChatGptPanel.currentPanel._panel.reveal(vscode.ViewColumn.One);
-        } else { // if not exist create a new one.
+        } else {
 
+            // if not exist create a new one.
             const extensionUri: vscode.Uri = context.extensionUri;
             const panel = vscode.window.createWebviewPanel("vscode-chat-gpt", "ChatGpt", vscode.ViewColumn.One, {
                 // Enable javascript in the webview.
@@ -77,8 +71,8 @@ export class ChatGptPanel {
     }
 
     /**
-     * Add listeners to catch messages from webview js.
-     * @param webview is a parameter that is typeoff vscode.Webview.
+     * Add listeners to catch messages from mainview js.
+     * @param webview :vscode.Webview.
      */
     private _setWebviewMessageListener(webview: vscode.Webview) {
         webview.onDidReceiveMessage(
@@ -88,6 +82,9 @@ export class ChatGptPanel {
                 switch (command) {
                     case "press-ask-button":
                         this.askToChatGpt(message.data);
+
+                        // add question command form side bar view
+                        EmitAddQuestionEvent(message.data);
                         return;
                     case "press-save-api-key-button":
                         setApiKey(this._context, message.data);
@@ -100,7 +97,6 @@ export class ChatGptPanel {
                         const claerResponseMessage = 'api key cleared successfully';
                         vscode.window.showInformationMessage(claerResponseMessage);
                         return;
-
                 }
             },
             undefined,
@@ -109,20 +105,28 @@ export class ChatGptPanel {
     }
 
     /**
-     * 
-     * @param webview is a parameter that is typeoff vscode.Webview.
-     * @param extensionUri is a string parameter of vscode.Uri.
-     * @returns 
+     * Add message event listener from other panels.
+     */
+    private addReceiveMessageEventsFromOtherPanels() {
+        clickHistoryQuestionEventEmitter.on('clickHistoryQuestion', (hisrtoryQuestion: string) => {
+            this.clickHistoryQuestion(hisrtoryQuestion);
+        });
+    }
+
+    /**
+     * Gets Html content of webview panel.
+     * @param webview :vscode.Webview.
+     * @param extensionUri :vscode.Uri.
+     * @returns string;
      */
     private _getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
 
         // get uris from out directory based on vscode.extensionUri
-        const webviewUri = getUri(webview, extensionUri, ["out", "webview.js"]);
+        const webviewUri = getUri(webview, extensionUri, ["out", "mainview.js"]);
         const nonce = getNonce();
-        const styleVSCodeUri  = getUri(webview,extensionUri, ['out/media', 'vscode.css']);
+        const styleVSCodeUri = getUri(webview, extensionUri, ['out/media', 'vscode.css']);
         const logoMainPath = getUri(webview, extensionUri, ['out/media', 'chat-gpt-logo.jpeg']);
 
-        // Tip: Install the es6-string-html VS Code extension to enable code highlighting below
         return /*html*/ `
         <!DOCTYPE html>
         <html lang="en">
@@ -161,29 +165,27 @@ export class ChatGptPanel {
         `;
     }
 
-    private addQuestion(lastQuestion: string): void {
-        setLastQuestion(this._context, lastQuestion);
-        vscode.commands.executeCommand('vscode-chat-gpt.addQuestion');
+    /**
+     * Ask history question to ChatGpt and send 'history-question-sended' command with data to mainview.js.
+     * @param hisrtoryQuestion :string
+     */
+    public clickHistoryQuestion(hisrtoryQuestion: string) {
+        this.askToChatGpt(hisrtoryQuestion);
+        ChatGptPanel.currentPanel?._panel.webview.postMessage({ command: 'history-question-sended', data: hisrtoryQuestion });
     }
 
-    public clickedHistoryQuestion(context: vscode.ExtensionContext) {
-        const historyQuestion = getHistoryQuestion(context);       
-        this.askToChatGpt(historyQuestion);
-
-        this._panel.webview.postMessage({ command: 'history-question-sended', data: historyQuestion });
-    }
-
+    /**
+     * Ask to ChatGpt a question ans send 'answer' command with data to mainview.js.
+     * @param question :string
+     */
     private askToChatGpt(question: string) {
         const existApiKey = getApiKey(this._context);
         if (existApiKey == undefined || existApiKey == null || existApiKey == '') {
-            vscode.window.showInformationMessage('Please add your ChatGpt api key!');          
+            vscode.window.showInformationMessage('Please add your ChatGpt api key!');
         } {
             askToChatGptAsStream(question, existApiKey).subscribe(answer => {
-                this._panel.webview.postMessage({ command: 'answer', data: answer });
+                ChatGptPanel.currentPanel?._panel.webview.postMessage({ command: 'answer', data: answer });
             });
-
-              // add question command form side bar view
-              this.addQuestion(question);          
         }
     }
 }
