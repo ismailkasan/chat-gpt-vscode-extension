@@ -37,6 +37,9 @@ Install from VSCode Extensions panel or [vscode-chat-gpt](https://marketplace.vi
 - Add ChatGpt Edit image model.
 - Add ChatGpt Create image variation model.
 
+## 🚀 About Me
+I'm a full stack developer. I've been dealing with software since 2016. I worked on a lot of projects so far. My strongest skills are C#, .Net
+Core, MsSql, javaScript, TypeScript and Angular2+. Also, I am working on sample like this extension Nodejs, MongoDb projects.
 ## Using Extension
 How to use!
 
