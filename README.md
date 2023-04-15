@@ -60,8 +60,6 @@ Core, MsSql, javaScript, TypeScript and Angular2+. Also, I am working on sample 
 
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/extension.png?raw=true)
 
-## For more information
-
 * Say hello!
 
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/extension-1.png?raw=true)
