@@ -4,20 +4,15 @@
 This is a chat bot that uses ChatGpt api. After setting your ChatGpt api key, you can use the chat bot and ask what you want. 
 To learn more please visit offical [OpenAI](https://openai.com/).
 
-Chat bot uses ChatGpt api with defaults below;
-
-- model : "gpt-3.5-turbo"
-- temperature : 0.7
-
 In the future, we are planning to add settings panel. So, user is able to change settings.
 ## Appendix
 
-This chat bot uses vscode api. Your API KEY will be safely stored in your workspace.
-Add new three commands to VSCode editor context menu with their keyboard shortcuts.
-These:
-- ChatGpt Add Comments(ctrl+ alt + C, shift + cmd + c). Support all language.
-- ChatGpt Add Documentaions(ctrl + alt + d, shift + cmd + d). Support javaScript, TypeScript, Java and C#.
-- ChatGpt Refactor(ctrl + alt + r, shift + cmd + r). Support all language.
+This chat bot uses VSCode api. Your API KEY will be safely stored in your workspace.
+with new version v1.1.0 add new three commands to VSCode editor context menu with their keyboard shortcuts below.
+
+- ChatGpt Add Comments(`ctrl+ alt + c`, `shift + cmd + c`). Support all language.
+- ChatGpt Add Documentaions(`ctrl + alt + d`, `shift + cmd + d`). Only support javaScript, TypeScript, Java and C#.
+- ChatGpt Refactor(`ctrl + alt + r`, `shift + cmd + r`). Only support javaScript, TypeScript, Java and C#.
 
 The result of these commands depent on ChatGpt "text-davinci-003" model. 
 
@@ -25,9 +20,21 @@ ChatGpt Models:
 - [gpt-3.5-turbo](https://github.com/kydycode/chatgpt-3.5-turbo) used for chat.
 - [text-davinci-003](https://platform.openai.com/docs/models/gpt-3-5) used for text complations.
 
+Chat completions defaults;
+- model : "gpt-3.5-turbo"
+- temperature : 0.7
+- stream: true
+- messages: [{ role: "user", content: prompt }]
+
+Text completions defaults;
+- model : "text-davinci-003"
+- max_tokens: 2048,
+- temperature: 0.0,
+- top_p: 0.1
+
 ## Installation
 
-Your vscode has to be upper or equel 1.77.0 version.
+Your VSCode version number has to be greater than or equal to 1.77.0 version.
 Install from VSCode Extensions panel or [vscode-chat-gpt](https://marketplace.visualstudio.com/items?itemName=ikasann-self.vscode-chat-gpt) from VSCode Marketplace
 
 ```bash
@@ -41,16 +48,6 @@ Install from VSCode Extensions panel or [vscode-chat-gpt](https://marketplace.vi
 - V1.0.0 Add Explorer View and show history of last 10 queries.
 - V1.1.0 Add new three commands to VSCode editor context menu. These: ChatGpt Add Comments, ChatGpt Add Documentaions and ChatGpt Refactor.
 - V1.1.1 Add conditions to context menu commands.
-
-## Roadmap
-
-- Add ChatGpt Create image model.
-- Add ChatGpt Edit image model.
-- Add ChatGpt Create image variation model.
-
-## 🚀 About Me
-I'm a full stack developer. I've been dealing with software since 2016. I worked on a lot of projects so far. My strongest skills are C#, .Net
-Core, MsSql, javaScript, TypeScript and Angular2+. Also, I am working on sample like this extension Nodejs, MongoDb projects.
 ## Using Extension
 
 * Open chat panel.
@@ -82,3 +79,13 @@ Core, MsSql, javaScript, TypeScript and Angular2+. Also, I am working on sample 
 * Add documentations.
 
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/add-documentation-1.png?raw=true)
+
+## Roadmap
+
+- Add ChatGpt Create image model.
+- Add ChatGpt Edit image model.
+- Add ChatGpt Create image variation model.
+
+## 🚀 About Me
+I'm a full stack developer. I've been dealing with software since 2016. I worked on a lot of projects so far. My strongest skills are C#, .Net
+Core, MsSql, javaScript, TypeScript and Angular2+. Also, I am working on sample like this extension Nodejs, MongoDb projects.
