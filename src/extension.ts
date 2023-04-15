@@ -2,6 +2,8 @@
 import * as vscode from 'vscode';
 import { ChatGptPanel } from './panels/main-view-panel';
 import { SideBarViewProvider } from './panels/side-bar-view-panel';
+import { getApiKey } from './utilities/utility.service';
+import { registerCommand } from './utilities/context-menu-command';
 
 export async function activate(context: vscode.ExtensionContext) {
 
@@ -14,6 +16,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	const provider = new SideBarViewProvider(context.extensionUri, context);
 
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider(SideBarViewProvider.viewType, provider));
+
+	const apiKey = getApiKey(context);
+	registerCommand(apiKey);
 
 }
 

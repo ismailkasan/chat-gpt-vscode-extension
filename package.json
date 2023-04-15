@@ -2,7 +2,7 @@
   "name": "vscode-chat-gpt",
   "displayName": "vscode-chat-gpt",
   "description": "Extension is a chat bot that uses ChatGpt Api.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "ikasann-self",
   "bugs": {
     "url": "https://github.com/ismailkasan/chat-gpt-vscode-extension/issues",
@@ -58,13 +58,56 @@
       {
         "command": "vscode-chat-gpt.start",
         "title": "Ask to ChatGpt"
-      }     
+      },
+      {
+        "command": "vscode-chat-gpt.refactor",
+        "title": "ChatGpt Refactor"
+      },
+      {
+        "command": "vscode-chat-gpt.addComments",
+        "title": "ChatGpt Add Comments"
+      },
+      {
+        "command": "vscode-chat-gpt.addDocumentaion",
+        "title": "ChatGpt Add Documentaion"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vscode-chat-gpt.addDocumentaion",
+        "key": "ctrl+alt+d",
+        "mac": "shift+cmd+d"
+      },
+      {
+        "command": "vscode-chat-gpt.addComments",
+        "key": "ctrl+alt+c",
+        "mac": "shift+cmd+c"
+      },
+      {
+        "command": "vscode-chat-gpt.refactor",
+        "key": "ctrl+alt+r",
+        "mac": "shift+cmd+r"
+      }
     ],
     "menus": {
-      "commandPalette": [ 
+      "commandPalette": [
         {
-          "command": "vscode-chat-gpt.start", 
+          "command": "vscode-chat-gpt.start",
           "when": "false"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "vscode-chat-gpt.refactor",
+          "group": "ChatGpt"
+        },
+        {
+          "command": "vscode-chat-gpt.addComments",
+          "group": "ChatGpt"
+        },
+        {
+          "command": "vscode-chat-gpt.addDocumentaion",
+          "group": "ChatGpt"
         }
       ]
     },

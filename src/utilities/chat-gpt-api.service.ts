@@ -93,3 +93,39 @@ export function askToChatGptAsStream(query: string | undefined, apikey: string):
         });
     });
 }
+
+
+export async function promptToTextDavinci003(prompt: string, apikey: string) {
+    try {
+        // 👇️ const response: Response
+        const response = await fetch('https://api.openai.com/v1/completions', {
+            method: 'POST',
+            body: JSON.stringify({
+                model: "text-davinci-003",
+                prompt: prompt,
+                max_tokens: 2048,
+                temperature: 0.0,
+                top_p: 0.1
+            }),
+            headers: {
+                "Content-Type": 'application/json',
+                authorization: 'Bearer ' + apikey,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error! status: ${response.status}`);
+        }
+
+        const result: any = (await response.json());
+
+        return result.choices[0].text;
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log('error message: ', error.message);
+        } else {
+            console.log('unexpected error: ', error);
+        }
+        throw error;
+    }
+}
