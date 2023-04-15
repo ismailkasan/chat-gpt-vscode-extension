@@ -61,7 +61,7 @@
       },
       {
         "command": "vscode-chat-gpt.refactor",
-        "title": "ChatGpt Refactor"
+        "title": "ChatGpt Refactor"   
       },
       {
         "command": "vscode-chat-gpt.addComments",
@@ -99,7 +99,8 @@
       "editor/context": [
         {
           "command": "vscode-chat-gpt.refactor",
-          "group": "ChatGpt"
+          "group": "ChatGpt",
+          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == csharp || editorLangId == java" 
         },
         {
           "command": "vscode-chat-gpt.addComments",
@@ -107,7 +108,8 @@
         },
         {
           "command": "vscode-chat-gpt.addDocumentaion",
-          "group": "ChatGpt"
+          "group": "ChatGpt",
+          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == csharp || editorLangId == java" 
         }
       ]
     },
