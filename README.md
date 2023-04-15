@@ -22,8 +22,8 @@ These:
 The result of these commands depent on ChatGpt "text-davinci-003" model. 
 
 ChatGpt Models:
-[gpt-3.5-turbo](https://github.com/kydycode/chatgpt-3.5-turbo) used for chat.
-[text-davinci-003](https://platform.openai.com/docs/models/gpt-3-5) used for text complations.
+- [gpt-3.5-turbo](https://github.com/kydycode/chatgpt-3.5-turbo) used for chat.
+- [text-davinci-003](https://platform.openai.com/docs/models/gpt-3-5) used for text complations.
 
 ## Installation
 
@@ -51,7 +51,8 @@ Install from VSCode Extensions panel or [vscode-chat-gpt](https://marketplace.vi
 I'm a full stack developer. I've been dealing with software since 2016. I worked on a lot of projects so far. My strongest skills are C#, .Net
 Core, MsSql, javaScript, TypeScript and Angular2+. Also, I am working on sample like this extension Nodejs, MongoDb projects.
 ## Using Extension
-How to use!
+
+* Open chat panel.
 
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/start-and-api-key.gif?raw=true)
 
@@ -61,23 +62,24 @@ How to use!
 
 ## For more information
 
-* Example 1
+* Say hello!
 
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/extension-1.png?raw=true)
 
-* Example 2
+* Wite a simple typescript code that find squareroot of a number.
 
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/extension-2.png?raw=true)
 
-* Example 3
+* Click recent query in the history.
 
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/history-clear.gif?raw=true)
 
-* Example 4
+* Add comments.
 
-![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/add-comment-1.pnd?raw=true)
-![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/add-comment-2.pnd?raw=true)
+![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/add-comment-1.png?raw=true)
 
-* Example 4
+![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/add-comment-2.png?raw=true)
 
-![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/add-documentation-1.pnd?raw=true)
+* Add documentations.
+
+![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/add-documentation-1.png?raw=true)
