@@ -48,6 +48,7 @@ Install from VSCode Extensions panel or [vscode-chat-gpt](https://marketplace.vi
 - V1.0.0 Add Explorer View and show history of last 10 queries.
 - V1.1.0 Add new three commands to VSCode editor context menu. These: ChatGpt Add Comments, ChatGpt Add Documentaions and ChatGpt Refactor.
 - V1.1.1 Add conditions to context menu commands.
+- V1.1.2 Add temperature settings to chat panel and add editor logo.
 ## Using Extension
 
 * Open chat panel.

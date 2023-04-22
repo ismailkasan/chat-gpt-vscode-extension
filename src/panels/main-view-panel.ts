@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { EmitAddQuestionEvent, clickHistoryQuestionEventEmitter, getApiKey, getNonce, getUri, setApiKey } from "../utilities/utility.service";
+import { EmitAddQuestionEvent, clickHistoryQuestionEventEmitter, getStoreData, getNonce, getAsWebviewUri, setStoreData, getVSCodeUri } from "../utilities/utility.service";
 import { askToChatGptAsStream } from "../utilities/chat-gpt-api.service";
 
 /**
@@ -21,19 +21,21 @@ export class ChatGptPanel {
         this._context = context;
         this._panel = panel;
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+
+
         this._panel.webview.html = this._getWebviewContent(this._panel.webview, extensionUri);
         this._setWebviewMessageListener(this._panel.webview);
         this.addReceiveMessageEventsFromOtherPanels();
 
         // Read the api key from globalState and send it to webview
-        const existApiKey = getApiKey(context);
-        this._panel.webview.postMessage({ command: 'api-key-exist', data: existApiKey });
+        const storeData = getStoreData(context);
+        this._panel.webview.postMessage({ command: 'api-key-exist', data: storeData });
     }
 
     /**
      * Render method of webview that is triggered from "extension.ts" file.
      * @param context :vscode.ExtensionContext.
-     */
+    */
     public static render(context: vscode.ExtensionContext) {
 
         // if exist show 
@@ -43,12 +45,19 @@ export class ChatGptPanel {
 
             // if not exist create a new one.
             const extensionUri: vscode.Uri = context.extensionUri;
-            const panel = vscode.window.createWebviewPanel("vscode-chat-gpt", "ChatGpt", vscode.ViewColumn.One, {
+            const panel = vscode.window.createWebviewPanel("vscode-chat-gpt", "Ask To Chat Gpt", vscode.ViewColumn.One, {
                 // Enable javascript in the webview.
                 enableScripts: true,
                 // Restrict the webview to only load resources from the `out` directory.
                 localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'out')]
             });
+
+            const logoMainPath = getVSCodeUri(extensionUri, ['out/media', 'chat-gpt-logo.jpeg']);
+            const icon = {
+                "light": logoMainPath,
+                "dark": logoMainPath
+            };
+            panel.iconPath = icon;
 
             ChatGptPanel.currentPanel = new ChatGptPanel(context, panel, extensionUri);
         }
@@ -87,14 +96,14 @@ export class ChatGptPanel {
                         EmitAddQuestionEvent(message.data);
                         return;
                     case "press-save-api-key-button":
-                        setApiKey(this._context, message.data);
-                        const responseMessage = `${message.data} : api key saved successfully.`;
+                        setStoreData(this._context, message.data);
+                        const responseMessage = `data saved successfully.`;
                         vscode.window.showInformationMessage(responseMessage);
                         return;
 
                     case "press-clear-api-key-button":
-                        setApiKey(this._context, '');
-                        const claerResponseMessage = 'api key cleared successfully';
+                        setStoreData(this._context, '');
+                        const claerResponseMessage = 'data cleared successfully';
                         vscode.window.showInformationMessage(claerResponseMessage);
                         return;
                 }
@@ -122,10 +131,10 @@ export class ChatGptPanel {
     private _getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
 
         // get uris from out directory based on vscode.extensionUri
-        const webviewUri = getUri(webview, extensionUri, ["out", "mainview.js"]);
+        const webviewUri = getAsWebviewUri(webview, extensionUri, ["out", "mainview.js"]);
         const nonce = getNonce();
-        const styleVSCodeUri = getUri(webview, extensionUri, ['out/media', 'vscode.css']);
-        const logoMainPath = getUri(webview, extensionUri, ['out/media', 'chat-gpt-logo.jpeg']);
+        const styleVSCodeUri = getAsWebviewUri(webview, extensionUri, ['out/media', 'vscode.css']);
+        const logoMainPath = getAsWebviewUri(webview, extensionUri, ['out/media', 'chat-gpt-logo.jpeg']);
 
         return /*html*/ `
         <!DOCTYPE html>
@@ -136,24 +145,23 @@ export class ChatGptPanel {
             <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
             <link href="${styleVSCodeUri}" rel="stylesheet">
             <link rel="icon" type="image/jpeg" href="${logoMainPath}">
-            <title>ChatGpt Assistant</title>
           </head>
           <body>
-            <h1>Ask to ChatGpt!</h1>
-            <vscode-text-field id="api-key-text-field-id" size="150">Api Key:</vscode-text-field>
+            <div class="flex-container mt-30">
+                <vscode-text-field id="api-key-text-field-id" size="100">Api Key:</vscode-text-field>
+                <vscode-text-field id="temperature-text-field-id" size="50">Temperature (number like 0.7): </vscode-text-field>
+            </div>
+            <span>
+                What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
+            </span>
             <div class="flex-container">
                 <vscode-button id="api-key-save-button-id">Save</vscode-button>
                 <vscode-button class="danger" id="api-key-clear-button-id">Clear</vscode-button>
             </div>
             <vscode-divider role="separator"></vscode-divider>
-            <div class="flex-container-logo">
-              <span>
-                <img class="logo-image" src="${logoMainPath}">
-              </span>
-              <span class="answer-header"> Answer : </span>
-            </div>
+            <p class="answer-header"> Answer : </p>            
             <pre><code class="code" id="answers-id"></code></pre>
-            <vscode-text-area class="text-area" id="question-text-id" cols="100" autofocus>Question</vscode-text-area>
+            <vscode-text-area class="text-area mt-20" id="question-text-id" cols="100" autofocus>Question:</vscode-text-area>
             <div class="flex-container">
               <vscode-button id="ask-button-id">Ask</vscode-button>
               <vscode-button class="danger" id="clear-button-id">Clear</vscode-button>
@@ -179,11 +187,16 @@ export class ChatGptPanel {
      * @param question :string
      */
     private askToChatGpt(question: string) {
-        const existApiKey = getApiKey(this._context);
+        const storeData = getStoreData(this._context);
+        const existApiKey = storeData.apiKey;
+        const existTemperature = storeData.temperature;
         if (existApiKey == undefined || existApiKey == null || existApiKey == '') {
             vscode.window.showInformationMessage('Please add your ChatGpt api key!');
-        } {
-            askToChatGptAsStream(question, existApiKey).subscribe(answer => {
+        } else if (existTemperature == undefined || existTemperature == null || existTemperature == 0) {
+            vscode.window.showInformationMessage('Please add temperature!');
+        }
+        else {
+            askToChatGptAsStream(question, existApiKey, existTemperature).subscribe(answer => {
                 ChatGptPanel.currentPanel?._panel.webview.postMessage({ command: 'answer', data: answer });
             });
         }

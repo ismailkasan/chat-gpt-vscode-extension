@@ -45,42 +45,53 @@ export function getNonce() {
 }
 
 /**
- * Create a vscode.Uri for source files.
+ * Create a vscode.Uri as WebviewUri for source files.
  * @param webview :vscode.Weview
  * @param extensionUri :vscode.Uri
  * @param pathList :string[]
  * @returns vscode.Uri
  */
-export function getUri(webview: Webview, extensionUri: Uri, pathList: string[]) {
+export function getAsWebviewUri(webview: Webview, extensionUri: Uri, pathList: string[]) {
   return webview.asWebviewUri(Uri.joinPath(extensionUri, ...pathList));
 }
 
 /**
- * Set api key into context.globalState.
- * @param context :vscode.ExtensionContext
- * @param apikeyValue : string | undefined
+ * Create a vscode.Uri for source files.
+ * @param extensionUri :vscode.Uri
+ * @param pathList :strig[]
+ * @returns vscode.Uri
  */
-export function setApiKey(context: vscode.ExtensionContext, apikeyValue: string | undefined) {
+export function getVSCodeUri(extensionUri: Uri, pathList: string[]) {
+  return vscode.Uri.joinPath(extensionUri, ...pathList);
+}
+
+/**
+ * Set storeData into context.globalState.
+ * @param context :vscode.ExtensionContext
+ * @param storeData : any
+ */
+export function setStoreData(context: vscode.ExtensionContext, storeData: any) {
   const state = stateManager(context);
 
-  if (apikeyValue !== undefined) {
+  if (storeData !== undefined) {
     state.write({
-      apiKey: apikeyValue
+      storeData: storeData
     });
   }
 }
 
 /**
- * Gets api key from context.globalState.
+ * Gets storeData from context.globalState.
  * @param context :vscode.ExtensionContext
  * @returns string
  */
-export function getApiKey(context: vscode.ExtensionContext): string {
+export function getStoreData(context: vscode.ExtensionContext): any {
   const state = stateManager(context);
 
-  const { apiKeyApplied } = state.read();
-  return apiKeyApplied as string;
+  const { storeData } = state.read();
+  return storeData as any;
 }
+
 
 
 /**
@@ -91,16 +102,16 @@ export function getApiKey(context: vscode.ExtensionContext): string {
 export function stateManager(context: vscode.ExtensionContext) {
   return {
     read,
-    write
+    write,
   };
 
   function read() {
     return {
-      apiKeyApplied: context.globalState.get('apiKey')
+      storeData: context.globalState.get('storeData')
     };
   }
 
   function write(newState: any) {
-    context.globalState.update('apiKey', newState.apiKey);
+    context.globalState.update('storeData', newState.storeData);
   }
 }

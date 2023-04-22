@@ -112,6 +112,14 @@ textarea::placeholder {
 	margin-top: 10px;
 }
 
+.mt-20 {
+	margin-top: 20px !important;
+}
+
+.mt-30 {
+	margin-top: 30px !important;
+}
+
 .code {
 	white-space: pre-wrap;
 }
@@ -120,20 +128,6 @@ textarea::placeholder {
 	color: #fff;
 	background-color: #d9534f;
 	border-color: #d43f3a
-}
-
-.flex-container-logo {
-	display: flex;
-	flex-direction: row;
-	justify-content: start;
-	align-items: center;
-	gap: 2px;
-	margin-top: 10px;
-}
-
-.logo-image {
-	border-radius: 8px;
-	width: 16px;
 }
 
 .answer-header {

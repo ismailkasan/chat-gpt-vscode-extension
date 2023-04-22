@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { addQuestionEventEmitter, FireClickHistoryQuestionEvent, getNonce, getUri } from '../utilities/utility.service';
+import { addQuestionEventEmitter, FireClickHistoryQuestionEvent, getNonce, getAsWebviewUri } from '../utilities/utility.service';
 
 export class SideBarViewProvider implements vscode.WebviewViewProvider {
 
@@ -102,10 +102,10 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 	private _getHtmlForWebview(webview: vscode.Webview, extensionUri: vscode.Uri) {
 
 		// Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
-		const scriptUri = getUri(webview, extensionUri, ["out", "side-bar-view.js"]);
+		const scriptUri = getAsWebviewUri(webview, extensionUri, ["out", "side-bar-view.js"]);
 
 		// Do the same for the stylesheet.
-		const styleVSCodeUri = getUri(webview, extensionUri, ['out/media', 'vscode.css']);
+		const styleVSCodeUri = getAsWebviewUri(webview, extensionUri, ['out/media', 'vscode.css']);
 
 		// Use a nonce to only allow a specific script to be run.
 		const nonce = getNonce();
@@ -136,7 +136,10 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 			</ul>
 			
 			<script nonce="${nonce}" src="${scriptUri}"></script>
-			<p class="model"> model:<a href="https://github.com/kydycode/chatgpt-3.5-turbo"> ${'gpt-3.5-turbo'}</a></p>
+			<div class="model">
+				<p> Editor model:<a href="https://platform.openai.com/docs/models/gpt-3-5"> ${'text-davinci-003'}</a></p>
+				<p> Chat model:<a href="https://github.com/kydycode/chatgpt-3.5-turbo"> ${'gpt-3.5-turbo'}</a></p>
+			<div>
 			</body>
 			</html>`;
 	}

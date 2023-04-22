@@ -24,6 +24,7 @@ window.addEventListener("load", main);
 // Declare Html elements
 const questionTextArea = document.getElementById("question-text-id") as TextArea;
 const apiKeyTextField = document.getElementById("api-key-text-field-id") as TextField;
+const temperatureTextField = document.getElementById("temperature-text-field-id") as TextField;
 const answer = document.getElementById("answers-id") as HTMLElement;
 const askButton = document.getElementById("ask-button-id") as Button;
 const clearButton = document.getElementById("clear-button-id") as Button;
@@ -41,8 +42,8 @@ function main() {
     // Add the eventLsteners.
     askButton?.addEventListener("click", handleAskClick);
     clearButton?.addEventListener("click", handleClearClick);
-    apiKeySaveButton?.addEventListener("click", handleSaveApiKeyClick);
-    apiKeyClearButton?.addEventListener("click", handleClearApiKeyClick);
+    apiKeySaveButton?.addEventListener("click", handleSaveClick);
+    apiKeyClearButton?.addEventListener("click", handleClearDataClick);
     questionTextArea.addEventListener("keypress", function (event) {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -65,11 +66,14 @@ function main() {
                     break;
                 case 'api-key-exist':
                     // Append api key.
-                    const apiKey = message.data;
+                    const apiKey = message.data.apiKey;
+                    const temperature = message.data.temperature;
                     apiKeyTextField.value = apiKey;
+                    temperatureTextField.value = temperature;
 
                     // Set disable api key text field. 
                     apiKeyTextField.disabled = true;
+                    temperatureTextField.disabled = true;
 
                     // Set disable api key save button. 
                     apiKeySaveButton.disabled = true;
@@ -124,36 +128,43 @@ function handleClearClick() {
 }
 
 /**
- * Handle save api key click event. 
+ * Handle save  click event. 
  */
-function handleSaveApiKeyClick() {
+function handleSaveClick() {
+    const data = {
+        apiKey: apiKeyTextField.value,
+        temperature: temperatureTextField.value,
+    }
     vscode.postMessage({
         command: "press-save-api-key-button",
-        data: apiKeyTextField.value,
+        data: data,
     });
 
     // Set disable api key text field. 
     apiKeyTextField.disabled = true;
+    temperatureTextField.disabled = true;
 
     // Set disable api key save button. 
     apiKeySaveButton.disabled = true;
 }
 
 /**
- * Handle clear api key click event.
+ * Handle clear click event.
  */
-function handleClearApiKeyClick() {
+function handleClearDataClick() {
 
     vscode.postMessage({
         command: "press-clear-api-key-button",
-        data: apiKeyTextField.value,
+        data: '',
     });
 
     // Clear api key text field.
     apiKeyTextField.value = '';
+    temperatureTextField.value = '';
 
     // Set un disable api key text field. 
     apiKeyTextField.disabled = false;
+    temperatureTextField.disabled = false;
 
     // Set un disable api key save button. 
     apiKeySaveButton.disabled = false;

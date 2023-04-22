@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
  * @param apikey of ChatGpt.
  * @returns 
  */
-export async function askToChatGpt(query: string | undefined, apikey: string) {
+export async function askToChatGpt(query: string | undefined, apiKey: string) {
     try {
         // 👇️ const response: Response
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -20,7 +20,7 @@ export async function askToChatGpt(query: string | undefined, apikey: string) {
             }),
             headers: {
                 "Content-Type": 'application/json',
-                authorization: 'Bearer ' + apikey,
+                authorization: 'Bearer ' + apiKey,
             },
         });
 
@@ -47,9 +47,10 @@ export async function askToChatGpt(query: string | undefined, apikey: string) {
  * Create asnyc request to ChatGpt api and gets straem.
  * @param question is that want to ask to ChatGpt.
  * @param apikey of ChatGpt.
+ * @param temperature.
  * @returns 
  */
-export function askToChatGptAsStream(query: string | undefined, apikey: string): Observable<string> {
+export function askToChatGptAsStream(query: string | undefined, apiKey: string, temperature: number): Observable<string> {
 
     return new Observable<string>(observer => {
         // 👇️ const response: Response
@@ -58,12 +59,13 @@ export function askToChatGptAsStream(query: string | undefined, apikey: string):
             body: JSON.stringify({
                 model: "gpt-3.5-turbo",
                 messages: [{ role: "user", content: query }],
-                temperature: 0.7,
+                // temperature: 0.7,
+                temperature:Number(temperature),
                 stream: true
             }),
             headers: {
                 'Content-Type': 'application/json',
-                authorization: 'Bearer ' + apikey,
+                authorization: 'Bearer ' + apiKey,
             },
         });
 
