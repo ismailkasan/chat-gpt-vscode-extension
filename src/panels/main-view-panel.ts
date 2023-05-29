@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { EmitAddQuestionEvent, clickHistoryQuestionEventEmitter, getStoreData, getNonce, getAsWebviewUri, setStoreData, getVSCodeUri } from "../utilities/utility.service";
+import { getStoreData, getNonce, getAsWebviewUri, setHistoryData, getVSCodeUri, getHistoryData } from "../utilities/utility.service";
 import { askToChatGptAsStream } from "../utilities/chat-gpt-api.service";
 
 /**
@@ -10,6 +10,9 @@ export class ChatGptPanel {
     private readonly _panel: vscode.WebviewPanel;
     private _disposables: vscode.Disposable[] = [];
     private _context: vscode.ExtensionContext;
+
+    // declare an array for search history.
+    private searchHistory: string[] = [];
 
     /**
      * Constructor
@@ -22,14 +25,10 @@ export class ChatGptPanel {
         this._panel = panel;
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
-
         this._panel.webview.html = this._getWebviewContent(this._panel.webview, extensionUri);
-        this._setWebviewMessageListener(this._panel.webview);
-        this.addReceiveMessageEventsFromOtherPanels();
+        this._setWebviewMessageListener(this._panel.webview);     
 
-        // Read the api key from globalState and send it to webview
-        const storeData = getStoreData(context);
-        this._panel.webview.postMessage({ command: 'api-key-exist', data: storeData });
+        this.sendHistoryAgain();
     }
 
     /**
@@ -37,7 +36,6 @@ export class ChatGptPanel {
      * @param context :vscode.ExtensionContext.
     */
     public static render(context: vscode.ExtensionContext) {
-
         // if exist show 
         if (ChatGptPanel.currentPanel) {
             ChatGptPanel.currentPanel._panel.reveal(vscode.ViewColumn.One);
@@ -61,6 +59,9 @@ export class ChatGptPanel {
 
             ChatGptPanel.currentPanel = new ChatGptPanel(context, panel, extensionUri);
         }
+
+        const historyData = getHistoryData(context);
+        ChatGptPanel.currentPanel._panel.webview.postMessage({ command: 'history-data', data: historyData });
     }
 
     /**
@@ -91,35 +92,22 @@ export class ChatGptPanel {
                 switch (command) {
                     case "press-ask-button":
                         this.askToChatGpt(message.data);
-
-                        // add question command form side bar view
-                        EmitAddQuestionEvent(message.data);
+                        this.addHistoryToStore(message.data);
                         return;
-                    case "press-save-api-key-button":
-                        setStoreData(this._context, message.data);
-                        const responseMessage = `data saved successfully.`;
-                        vscode.window.showInformationMessage(responseMessage);
-                        return;
-
-                    case "press-clear-api-key-button":
-                        setStoreData(this._context, '');
-                        const claerResponseMessage = 'data cleared successfully';
-                        vscode.window.showInformationMessage(claerResponseMessage);
-                        return;
+                    case "history-question-clicked":
+                        this.clickHistoryQuestion(message.data);
+                        break;
+                    case "history-request":
+                        this.sendHistoryAgain();
+                        break;
+                    case "clear-history":
+                        this.clearHistory();
+                        break;
                 }
             },
             undefined,
             this._disposables
         );
-    }
-
-    /**
-     * Add message event listener from other panels.
-     */
-    private addReceiveMessageEventsFromOtherPanels() {
-        clickHistoryQuestionEventEmitter.on('clickHistoryQuestion', (hisrtoryQuestion: string) => {
-            this.clickHistoryQuestion(hisrtoryQuestion);
-        });
     }
 
     /**
@@ -142,31 +130,24 @@ export class ChatGptPanel {
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'self' 'unsafe-inline'; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
             <link href="${styleVSCodeUri}" rel="stylesheet">
             <link rel="icon" type="image/jpeg" href="${logoMainPath}">
           </head>
-          <body>
-            <div class="flex-container mt-30">
-                <vscode-text-field id="api-key-text-field-id" size="100">Api Key:</vscode-text-field>
-                <vscode-text-field id="temperature-text-field-id" size="50">Temperature (number like 0.7): </vscode-text-field>
-            </div>
-            <span>
-                What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
-            </span>
-            <div class="flex-container">
-                <vscode-button id="api-key-save-button-id">Save</vscode-button>
-                <vscode-button class="danger" id="api-key-clear-button-id">Clear</vscode-button>
-            </div>
-            <vscode-divider role="separator"></vscode-divider>
-            <p class="answer-header"> Answer : </p>            
+          <body>          
+            <p class="answer-header mt-30"> Answer : </p>            
             <pre><code class="code" id="answers-id"></code></pre>
-            <vscode-text-area class="text-area mt-20" id="question-text-id" cols="100" autofocus>Question:</vscode-text-area>
+            <vscode-text-area class="text-area mt-20" id="question-text-id" cols="100">Question:</vscode-text-area>
             <div class="flex-container">
               <vscode-button id="ask-button-id">Ask</vscode-button>
               <vscode-button class="danger" id="clear-button-id">Clear</vscode-button>
+              <vscode-button class="danger" id="clear-history-button">Clear History</vscode-button>
               <vscode-progress-ring id="progress-ring-id"></vscode-progress-ring>
             </div>
+
+            <p class="chat-history">Chat History</p>
+			<ul id="history-id">
+			</ul>
             <script type="module" nonce="${nonce}" src="${webviewUri}"></script>
           </body>
         </html>
@@ -174,12 +155,16 @@ export class ChatGptPanel {
     }
 
     /**
-     * Ask history question to ChatGpt and send 'history-question-sended' command with data to mainview.js.
+     * Ask history question to ChatGpt and send 'history-question-clicked' command with data to mainview.js.
      * @param hisrtoryQuestion :string
      */
     public clickHistoryQuestion(hisrtoryQuestion: string) {
         this.askToChatGpt(hisrtoryQuestion);
-        ChatGptPanel.currentPanel?._panel.webview.postMessage({ command: 'history-question-sended', data: hisrtoryQuestion });
+    }
+
+    public sendHistoryAgain() {
+        const historyData = getHistoryData(this._context);
+        this._panel.webview.postMessage({ command: 'history-data', data: historyData });
     }
 
     /**
@@ -200,5 +185,21 @@ export class ChatGptPanel {
                 ChatGptPanel.currentPanel?._panel.webview.postMessage({ command: 'answer', data: answer });
             });
         }
+    }
+
+    clearHistory() {       
+        this.searchHistory=[];
+        setHistoryData(this._context, this.searchHistory);
+    }
+
+    addHistoryToStore(question: string) {
+        this.searchHistory=getHistoryData(this._context);
+        this.searchHistory.push(question);
+        setHistoryData(this._context, this.searchHistory);
+    }
+
+    getHistoryFromStore() {
+        const history = getHistoryData(this._context);
+       return history;
     }
 }

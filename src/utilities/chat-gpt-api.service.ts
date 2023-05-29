@@ -42,7 +42,6 @@ export async function askToChatGpt(query: string | undefined, apiKey: string) {
     }
 }
 
-
 /**
  * Create asnyc request to ChatGpt api and gets straem.
  * @param question is that want to ask to ChatGpt.
@@ -60,7 +59,7 @@ export function askToChatGptAsStream(query: string | undefined, apiKey: string, 
                 model: "gpt-3.5-turbo",
                 messages: [{ role: "user", content: query }],
                 // temperature: 0.7,
-                temperature:Number(temperature),
+                temperature: Number(temperature),
                 stream: true
             }),
             headers: {
@@ -96,7 +95,6 @@ export function askToChatGptAsStream(query: string | undefined, apiKey: string, 
     });
 }
 
-
 export async function promptToTextDavinci003(prompt: string, apikey: string) {
     try {
         // 👇️ const response: Response
@@ -129,5 +127,47 @@ export async function promptToTextDavinci003(prompt: string, apikey: string) {
             console.log('unexpected error: ', error);
         }
         throw error;
+    }
+}
+
+/**
+ * Create asnyc request to ChatGpt api to generate a new images.
+ * @param prompt 
+ * @param apiKey 
+ * @param n 
+ * @param size 
+ * @returns 
+ */
+export async function imageGenerationeFromChatGpt(prompt: string | undefined, apiKey: string, n: number = 1, size: string = "1024x1024") {
+    try {
+        // 👇️ const response: Response
+        const response = await fetch('https://api.openai.com/v1/images/generations', {
+            method: 'POST',
+            body: JSON.stringify({
+                prompt: prompt,
+                n: Number(n),
+                size: size
+            }),
+            headers: {
+                "Content-Type": 'application/json',
+                authorization: 'Bearer ' + apiKey,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error! status: ${response.status}`);
+        }
+
+        const result: any = (await response.json());
+
+        return result.data;
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log('error message: ', error.message);
+            return error.message;
+        } else {
+            console.log('unexpected error: ', error);
+            return 'An unexpected error occurred';
+        }
     }
 }

@@ -20,20 +20,6 @@ const vscode = acquireVsCodeApi();
 // Add load event listener.
 window.addEventListener("load", main);
 
-// declare an array for search history.
-let searchHistory: string[] = [];
-
-vscode.postMessage({
-    command: "history-request",
-});
-
-// Declare Html elements
-const answer = document.getElementById("answers-id") as HTMLElement;
-const chatQuestionTextArea = document.getElementById("question-text-id") as TextArea;
-const askButton = document.getElementById("ask-button-id") as Button;
-const clearButton = document.getElementById("clear-button-id") as Button;
-const clearHistoryButton = document.getElementById("clear-history-button");
-
 // image
 const askImageButton = document.getElementById("ask-image-button-id") as Button;
 const promptTextArea = document.getElementById("prompt-text-id") as TextArea;
@@ -46,23 +32,9 @@ function main() {
 
     hideProgressRing();
 
-    // Add the eventLsteners.
-    askButton?.addEventListener("click", handleAskClick);
-    clearButton?.addEventListener("click", handleClearClick);
-    clearHistoryButton?.addEventListener("click", handleClearHistoryButtonClick);
-
     // image button events
     askImageButton?.addEventListener("click", handleImageAskClick);
-    clearImageButton?.addEventListener("click", handleImageClearClick);
-
-    // chat enter event
-    chatQuestionTextArea?.addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            // Trigger the button element with a click
-            handleAskClick();
-        }
-    });
+    clearImageButton?.addEventListener("click", handleImageClearClick);  
 
     // image enter event
     promptTextArea?.addEventListener("keypress", function (event) {
@@ -78,15 +50,6 @@ function main() {
         window.addEventListener('message', event => {
             const message = event.data; // The json data that the extension sent
             switch (message.command) {
-                case 'answer':
-                    // Append answer.
-                    const data = document.createTextNode(message.data);
-                    answer?.appendChild(data);
-                    break;
-                case 'history-data':
-                    searchHistory = message.data;
-                    updateHistoryList();
-                    break;
                 case 'image-urls-answer':
                     // Append answer.
                     const imageList = message.data as any[];
@@ -108,128 +71,6 @@ function main() {
     }
 }
 
-//#region Chat
-
-/**
- * Handle ask button click event.
- */
-function handleAskClick() {
-
-    // Send messages to Panel.
-    vscode.postMessage({
-        command: "press-ask-button",
-        data: chatQuestionTextArea.value,
-    });
-
-    // Clear answer filed.
-    answer.innerHTML = '';
-
-    addHistory(chatQuestionTextArea.value);
-}
-
-/**
- * Handle clear button click event.
- */
-function handleClearClick() {
-    // Clear answer field.
-    answer.innerHTML = '';
-
-    // Clear question field.
-    chatQuestionTextArea.value = '';
-}
-
-/**
- * Handle clear button click event.
- */
-function handleClearHistoryButtonClick() {
-    searchHistory = [];
-
-    // Send messages to Panel.
-    vscode.postMessage({
-        command: "clear-history",
-    });
-
-    updateHistoryList()
-}
-
-/**
- * Update history list.
- */
-function updateHistoryList() {
-
-    const ul = document.getElementById('history-id');
-
-    if (ul != null) {
-        ul.textContent = '';
-        let index = 0;
-        for (const content of searchHistory) {
-            if (content != undefined) {
-
-                index++;
-                const spanContainer = document.createElement('span');
-                spanContainer.id = "container-span-id"
-                spanContainer.className = "flex-container"
-                spanContainer.style.marginTop = '15px';
-
-                const spanNumber = document.createElement('span');
-                spanNumber.id = "span-number-id"
-                spanNumber.textContent = index + ') ';
-                spanNumber.style.minWidth = '10px';
-                spanNumber.style.width = '10px';
-                spanNumber.style.fontSize = '14px';
-                spanContainer.appendChild(spanNumber);
-
-                const li = document.createElement('li');
-                li.textContent = content.length > 50 ? content.substring(0, 250) + '...' : content;
-                li.addEventListener('click', () => {
-                    onHistoryClicked(content);
-                });
-                li.title = content;
-                li.style.cursor = 'pointer';
-                li.style.fontSize = '14px';
-                li.style.listStyleType = 'none';
-
-                spanContainer.appendChild(li);
-                ul.appendChild(spanContainer);
-            }
-        }
-    }
-}
-
-/**
- * Handle on click history question event.
- */
-function onHistoryClicked(question: string) {
-    vscode.postMessage({ command: 'history-question-clicked', data: question });
-
-    // clear fields
-    answer.innerHTML = '';
-    chatQuestionTextArea.value = question;
-}
-
-/**
- * Add last search to history.
- * @param content :string
- */
-function addHistory(content: string) {
-    if (content != undefined) {
-        if (searchHistory.length < 10) {
-            if (!searchHistory.includes(content))
-                searchHistory.unshift(content);
-        }
-        if (searchHistory.length == 10) {
-            searchHistory.pop();
-            if (!searchHistory.includes(content)) {
-                searchHistory.unshift(content);
-            }
-        }
-    }
-    updateHistoryList();
-}
-
-//#endregion Chat
-
-//#region Image
 
 /**
  * Update history list.
@@ -273,7 +114,6 @@ function updateImageList(imageUrls: any[]) {
     }
 }
 
-
 /**
  * Handle generate image button click event.
  */
@@ -304,7 +144,6 @@ function handleImageClearClick() {
 
     // Clear question field.
     promptTextArea.value = '';
-
 }
 
 
@@ -313,7 +152,6 @@ function showErrorMessage(message: string) {
     pError.textContent = message;
 }
 
-//#endregion Image
 
 /**
  * Show progessing ring.

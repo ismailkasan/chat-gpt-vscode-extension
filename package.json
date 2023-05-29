@@ -1,8 +1,8 @@
 {
   "name": "vscode-chat-gpt",
   "displayName": "vscode-chat-gpt",
-  "description": "Extension is a chat bot that uses ChatGpt Api.",
-  "version": "1.1.2",
+  "description": "Extension uses ChatGpt Api to make chat compilations and image generations.",
+  "version": "1.2.0",
   "publisher": "ikasann-self",
   "bugs": {
     "url": "https://github.com/ismailkasan/chat-gpt-vscode-extension/issues",
@@ -58,6 +58,10 @@
       {
         "command": "vscode-chat-gpt.start",
         "title": "Ask to ChatGpt"
+      },
+      {
+        "command": "vscode-chat-gpt.start-image",
+        "title": "Start Image"
       },
       {
         "command": "vscode-chat-gpt.refactor",

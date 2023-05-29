@@ -2,20 +2,7 @@ import { Uri, Webview } from "vscode";
 import * as vscode from "vscode";
 import EventEmitter = require('events');
 
-/**
- * Add new question event emitter.
- */
-const addQuestionEventEmitter = new EventEmitter();
-export { addQuestionEventEmitter }
 
-
-/**
- * Fire addQuestion event.
- * @param question :string.
-*/
-export function EmitAddQuestionEvent(question: string) {
-  addQuestionEventEmitter.emit('addQuestion', question);
-}
 
 /**
  * Click history question event emitter.
@@ -80,6 +67,16 @@ export function setStoreData(context: vscode.ExtensionContext, storeData: any) {
   }
 }
 
+export function setHistoryData(context: vscode.ExtensionContext, historyData: any) {
+  const state = stateManager(context);
+
+  if (historyData !== undefined) {
+    state.writeHistory({
+      historyData: historyData
+    });
+  }
+}
+
 /**
  * Gets storeData from context.globalState.
  * @param context :vscode.ExtensionContext
@@ -92,7 +89,12 @@ export function getStoreData(context: vscode.ExtensionContext): any {
   return storeData as any;
 }
 
+export function getHistoryData(context: vscode.ExtensionContext): any {
+  const state = stateManager(context);
 
+  const { historyData } = state.readHistory();
+  return historyData as any;
+}
 
 /**
 * State Manager has read and write methods for api key. This methods set and get the api key from context.globalState.
@@ -103,6 +105,8 @@ export function stateManager(context: vscode.ExtensionContext) {
   return {
     read,
     write,
+    writeHistory,
+    readHistory
   };
 
   function read() {
@@ -110,8 +114,18 @@ export function stateManager(context: vscode.ExtensionContext) {
       storeData: context.globalState.get('storeData')
     };
   }
+  
+  function readHistory() {
+    return {
+      historyData: context.globalState.get('historyData')
+    };
+  }
 
   function write(newState: any) {
     context.globalState.update('storeData', newState.storeData);
+  }
+
+  function writeHistory(newState: any) {
+    context.globalState.update('historyData', newState.historyData);
   }
 }

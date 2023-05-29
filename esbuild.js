@@ -28,13 +28,22 @@ const extensionConfig = {
     external: ["vscode"],
 };
 
-const webviewConfig = {
+const webViewConfig = {
     ...baseConfig,
     target: "es2020",
     format: "esm",
     entryPoints: ["./src/webviews/main-view.ts"],
     outfile: "./out/mainview.js",
 };
+
+const imageViewConfig = {
+    ...baseConfig,
+    target: "es2020",
+    format: "esm",
+    entryPoints: ["./src/webviews/image-view.ts"],
+    outfile: "./out/imageview.js",
+};
+
 const sideBarViewConfig = {
     ...baseConfig,
     target: "es2020",
@@ -80,7 +89,11 @@ const watchConfig = {
                 ...watchConfig,
             });
             await build({
-                ...webviewConfig,
+                ...webViewConfig,
+                ...watchConfig,
+            });          
+            await build({
+                ...imageViewConfig,
                 ...watchConfig,
             });          
             await build({
@@ -94,7 +107,8 @@ const watchConfig = {
             console.log("[watch] build finished");
         } else {
             await build(extensionConfig);
-            await build(webviewConfig);
+            await build(webViewConfig);
+            await build(imageViewConfig);
             await build(sideBarViewConfig);
             await build(testConfig);
             console.log("build complete");

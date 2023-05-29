@@ -5,21 +5,14 @@ const vscode = acquireVsCodeApi();
  */
 window.addEventListener("load", main);
 
-// Get search history from state.
-const oldState: any = vscode.getState() || { searchHistory: [] };
-
-// declare an array for search history.
-let searchHistory: string[] = [];
-
-if (oldState.searchHistory) {
-    searchHistory = oldState.searchHistory;
-    updateHistoryList();
-}
-
-
 // Declare Html elements.
 const startChatButton = document.getElementById("start-chat-gpt-button");
-const clearButton = document.getElementById("clear-history-button");
+const imageButton = document.getElementById("image-generate-button");
+const apiKeySaveButton = document.getElementById("api-key-save-button-id") as any;
+const apiKeyTextField = document.getElementById("api-key-text-field-id") as any;
+const temperatureTextField = document.getElementById("temperature-text-field-id") as any;
+const imageNumberTextField = document.getElementById("image-number-text-field-id") as any;
+const imageSizeTextField = document.getElementById("image-size-text-field-id") as any;
 
 /**
  * Main function
@@ -28,16 +21,23 @@ function main() {
 
     // Add eventLsteners of Html elements.
     startChatButton?.addEventListener("click", handleStartButtonClick);
-    clearButton?.addEventListener("click", handleClearButtonClick);
+    imageButton?.addEventListener("click", handleImageButtonClick);
+    apiKeySaveButton?.addEventListener("click", handleSaveClick);
 
     // Handle messages sent from the extension or panel to the webview
     window.addEventListener('message', event => {
         const message = event.data; // The json data that the extension sent
         switch (message.command) {
-            case 'add-new-question-command':
-                {
-                    addHistory(message.data);
-                }
+            case 'settings-exist':
+                // Append api key.
+                const apiKey = message.data.apiKey;
+                const temperature = message.data.temperature;
+                const responseNumber = message.data.responseNumber;
+                const imageSize = message.data.imageSize;
+                apiKeyTextField.value = apiKey;
+                temperatureTextField.value = temperature;
+                imageNumberTextField.value = responseNumber;
+                imageSizeTextField.value = imageSize;
                 break;
             case 'error':
                 console.log(message);
@@ -58,85 +58,28 @@ function handleStartButtonClick() {
 }
 
 /**
- * Handle clear button click event.
+ * Handle image button click event.
  */
-function handleClearButtonClick() {
-    searchHistory = [];
-    vscode.setState({ searchHistory: searchHistory });
-    updateHistoryList()
+function handleImageButtonClick() {
+    // Send messages to Panel.
+    vscode.postMessage({
+        command: "image-buton-clicked-command",
+        text: 'image-button',
+    });
 }
 
 /**
- * Handle on click history question event.
+ * Handle save  click event. 
  */
-function onHistoryClicked(question: string) {
-    vscode.postMessage({ command: 'history-question-command', data: question });
-}
-
-
-/**
- * Update history list.
- */
-function updateHistoryList() {
-    const ul = document.getElementById('history-id');
-
-    if (ul != null) {
-        ul.textContent = '';
-        let index = 0;
-        for (const content of searchHistory) {
-            if (content != undefined) {
-
-                index++;
-                const spanContainer = document.createElement('span');
-                spanContainer.id = "container-span-id"
-                spanContainer.className = "flex-container"
-                spanContainer.style.marginTop = '15px';
-
-                const spanNumber = document.createElement('span');
-                spanNumber.id = "span-number-id"
-                spanNumber.textContent = index + ') ';
-                spanNumber.style.minWidth = '10px';
-                spanNumber.style.width = '10px';
-                spanNumber.style.fontSize = '14px';
-                spanContainer.appendChild(spanNumber);
-
-                const li = document.createElement('li');
-                li.textContent = content.length > 50 ? content.substring(0, 50) + '...' : content;
-                li.addEventListener('click', () => {
-                    onHistoryClicked(content);
-                });
-                li.title = content;
-                li.style.cursor = 'pointer';
-                li.style.fontSize = '14px';
-                li.style.listStyleType = 'none';
-
-                spanContainer.appendChild(li);
-                ul.appendChild(spanContainer);
-            }
-        }
+function handleSaveClick() {
+    const data = {
+        apiKey: apiKeyTextField?.value,
+        temperature: temperatureTextField?.value,
+        responseNumber: imageNumberTextField?.value,
+        imageSize: imageSizeTextField?.value
     }
-
-    // Update the saved state
-    vscode.setState({ searchHistory: searchHistory });
-
-}
-
-/**
- * Add last search to history.
- * @param content :string
- */
-function addHistory(content: string) {
-    if (content != undefined) {
-        if (searchHistory.length < 10) {
-            if (!searchHistory.includes(content))
-                searchHistory.unshift(content);
-        }
-        if (searchHistory.length == 10) {
-            searchHistory.pop();
-            if (!searchHistory.includes(content)) {
-                searchHistory.unshift(content);
-            }
-        }
-    }
-    updateHistoryList();
+    vscode.postMessage({
+        command: "save-settings",
+        data: data,
+    });
 }

@@ -1,10 +1,9 @@
 
 # ChatGpt extension for VSCode
 
-This is a chat bot that uses ChatGpt api. After setting your ChatGpt api key, you can use the chat bot and ask what you want. 
+This is a chat bot that uses ChatGpt api. After setting your settings(api key, temperature,response number, size ), you can ask what you want or generate images. 
 To learn more please visit offical [OpenAI](https://openai.com/).
 
-In the future, we are planning to add settings panel. So, user is able to change settings.
 ## Appendix
 
 This chat bot uses VSCode api. Your API KEY will be safely stored in your workspace.
@@ -19,6 +18,7 @@ The result of these commands depent on ChatGpt "text-davinci-003" model.
 ChatGpt Models:
 - [gpt-3.5-turbo](https://github.com/kydycode/chatgpt-3.5-turbo) used for chat.
 - [text-davinci-003](https://platform.openai.com/docs/models/gpt-3-5) used for text complations.
+- [DALL·E](https://platform.openai.com/docs/models/dall-e) used for image generations.
 
 Chat completions defaults;
 - model : "gpt-3.5-turbo"
@@ -31,6 +31,11 @@ Text completions defaults;
 - max_tokens: 2048,
 - temperature: 0.0,
 - top_p: 0.1
+
+Image generation defaults;
+- model : "DALL·E"
+- n: 1,
+- size: '1024x1024',
 
 ## Installation
 
@@ -49,6 +54,7 @@ Install from VSCode Extensions panel or [vscode-chat-gpt](https://marketplace.vi
 - V1.1.0 Add new three commands to VSCode editor context menu. These: ChatGpt Add Comments, ChatGpt Add Documentaions and ChatGpt Refactor.
 - V1.1.1 Add conditions to context menu commands.
 - V1.1.2 Add temperature settings to chat panel and add editor logo.
+- V1.2.0 Add settings panel and image generation tab.
 ## Using Extension
 
 * Open chat panel.
@@ -71,8 +77,15 @@ Install from VSCode Extensions panel or [vscode-chat-gpt](https://marketplace.vi
 
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/history-clear.gif?raw=true)
 
-* Add comments.
+* New Setting Panel.
 
+![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/new-ask-gpt.png?raw=true)
+
+* New Image Generate Panel.
+
+![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/generate-image.png?raw=true)
+
+* Add comments.
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/add-comment-1.png?raw=true)
 
 ![alt text](https://github.com/ismailkasan/chat-gpt-vscode-extension/blob/main/src/images/add-comment-2.png?raw=true)
@@ -89,4 +102,4 @@ Install from VSCode Extensions panel or [vscode-chat-gpt](https://marketplace.vi
 
 ## 🚀 About Me
 I'm a full stack developer. I've been dealing with software since 2016. I worked on a lot of projects so far. My strongest skills are C#, .Net
-Core, MsSql, javaScript, TypeScript and Angular2+. Also, I am working on sample like this extension Nodejs, MongoDb projects.
+Core, MsSql, javaScript, TypeScript and Angular2+. Also, I am working on sample projects of Nodejs, MongoDb etc. like this extension.

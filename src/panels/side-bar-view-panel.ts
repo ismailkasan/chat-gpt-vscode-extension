@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { addQuestionEventEmitter, FireClickHistoryQuestionEvent, getNonce, getAsWebviewUri } from '../utilities/utility.service';
+import { getNonce, getAsWebviewUri, getStoreData, setStoreData } from '../utilities/utility.service';
 
 export class SideBarViewProvider implements vscode.WebviewViewProvider {
 
@@ -9,13 +9,16 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 	constructor(
 		private readonly _extensionUri: vscode.Uri,
 		private readonly _context: vscode.ExtensionContext,
-	) { }
+	) {
+
+	}
 
 	public resolveWebviewView(
 		webviewView: vscode.WebviewView,
 		context: vscode.WebviewViewResolveContext,
 		_token: vscode.CancellationToken,
 	) {
+
 		this._view = webviewView;
 
 		webviewView.webview.options = {
@@ -29,9 +32,10 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 		// Register message events that comes from the js.
 		this.addReceiveMessageEvents(webviewView.webview);
 
-		// Register message events that comes from the other panels.
-		this.addReceiveMessageEventsFromOtherPanel();
 
+		// Read the api key from globalState and send it to webview
+		const storeData = getStoreData(this._context);
+		this._view.webview.postMessage({ command: 'settings-exist', data: storeData });
 	}
 
 	/**
@@ -45,33 +49,19 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 				case "start-chat-command":
 					this.startChatGptWebViewPanel();
 					break;
-				case "history-question-command":
-					this.clickHistoryQuestion(message.data);
+
+				case "image-buton-clicked-command":
+					this.startImageWebViewPanel();
+					break;
+				case "save-settings":
+					setStoreData(this._context, message.data);
+					const responseMessage = `Settings saved successfully.`;
+					vscode.window.showInformationMessage(responseMessage);
 					break;
 			}
 		},
 			undefined
 		);
-	}
-
-	/**
-	 * Add listener for event comes from other panels.
-	 */
-	private addReceiveMessageEventsFromOtherPanel() {
-		addQuestionEventEmitter.on('addQuestion', (question: string) => {
-			this.sendAddQuestionCommand(question);
-		});
-	}
-
-	/**
-	 * Send "add-new-question-command" and data to side-bar-view.js
-	 * @param question :string
-	 */
-	public sendAddQuestionCommand(question: string) {
-		if (this._view) {
-			this._view.show?.(true); // `show` is not implemented in 1.49 but is for 1.50 insiders
-			this._view.webview.postMessage({ command: 'add-new-question-command', data: question });
-		}
 	}
 
 	/**
@@ -82,15 +72,10 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	/**
-	 * start main panel and send history question data.
-	 * @param historyQuestion :string
+	 * start image main  panel. 
 	 */
-	private clickHistoryQuestion(historyQuestion: string): void {
-		vscode.commands.executeCommand('vscode-chat-gpt.start');
-		setTimeout(() => {
-			// fire event in the communication service
-			FireClickHistoryQuestionEvent(historyQuestion);
-		}, 1000);
+	private startImageWebViewPanel(): void {
+		vscode.commands.executeCommand('vscode-chat-gpt.start-image');
 	}
 
 	/**
@@ -128,13 +113,40 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 			<body>
 
 			<div class="flex-container">
-			<button id="start-chat-gpt-button">New Chat</button>
-			<button id="clear-history-button" class="danger" >Clear History</button>
+				<button id="start-chat-gpt-button">New Chat</button>			
+				<button id="image-generate-button" class="success">Images</button>
 			</div>
-			<p class="chat-history">Chat History</p>
-			<ul id="history-id">
-			</ul>
-			
+			<p class="p-header mt-20" >General Settings</p>
+			<div class="form-flex-container">
+				<label>Api Key:</label>
+				<input id="api-key-text-field-id" placeholder="OpenAi api key." />							
+			</div>		
+			<div class="form-flex-container">
+				<label>Temp:</label>
+				<input id="temperature-text-field-id" placeholder="0.8" />				
+			</div>
+			<span class="info-message">
+				What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
+			</span>
+			<p class="p-header mt-20">Images Settings</p>
+			<div class="form-flex-container">
+				<label>Response Number:</label>
+				<input id="image-number-text-field-id" placeholder="Number of generated images." />							
+			</div>	
+			<span class="info-message">
+				Smaller sizes are faster to generate. You can request 1-5 images at a time using the n parameter.
+			</span>		
+			<div class="form-flex-container">
+				<label>Size:</label>
+				<input id="image-size-text-field-id" placeholder="Size of images like '1024x1024'" />							
+			</div>
+			<span class="info-message">
+				Generated images can have a size of 256x256, 512x512, or 1024x1024 pixels.
+			</span>
+			<div class="flex-container">
+				<button id="api-key-save-button-id">Save</button>
+			</div>
+		
 			<script nonce="${nonce}" src="${scriptUri}"></script>
 			<div class="model">
 				<p> Editor model:<a href="https://platform.openai.com/docs/models/gpt-3-5"> ${'text-davinci-003'}</a></p>

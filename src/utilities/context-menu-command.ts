@@ -35,7 +35,6 @@ function refactorCode(apiKey: string) {
     let prompt = `Refactor the following ${textEditor.document.languageId} code ` + selectedText;
 
     promptToTextDavinci003(prompt, apiKey).then(result => {
-        console.log(result);
         // vscode.commands.executeCommand("cursorMove", { "to": "viewPortTop" });
         textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, result));
     });
@@ -136,7 +135,6 @@ function addDocument(apiKey: string) {
 
                 promptToTextDavinci003(prompt, apiKey).then(result => {
                     const parts = result.split('</returns>') as string[];
-                    console.log(parts[0]);
                     textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, parts[0] + "</returns> \n" + selectedText));
                 });
                 break;

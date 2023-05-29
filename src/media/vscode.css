@@ -103,15 +103,6 @@ textarea::placeholder {
 	min-height: auto;
 }
 
-.flex-container {
-	display: flex;
-	flex-direction: row;
-	justify-content: start;
-	align-items: center;
-	gap: 10px;
-	margin-top: 10px;
-}
-
 .mt-20 {
 	margin-top: 20px !important;
 }
@@ -153,4 +144,51 @@ textarea::placeholder {
 	bottom: 0;
 	position: absolute;
 	margin-bottom: 20px;
+}
+
+.label-control {
+	max-width: 30px;
+	width: 30px;
+}
+
+.form-flex-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: start;
+	align-items: start;
+	gap: 10px;
+	margin-top: 10px;
+}
+
+.p-header {
+	font-size: medium;
+	font-weight: bold;
+}
+
+.info-message {
+	font-size: 11px;
+	color: #e26d0e;
+}
+
+
+div.gallery {
+	margin: 5px;
+	border: 1px solid #ccc;
+	float: left;
+	width: 180px;
+}
+
+div.gallery:hover {
+	border: 1px solid #777;
+}
+
+div.gallery img {
+	width: 100%;
+	height: auto;
+}
+
+div.desc {
+	padding: 15px;
+	text-align: center;
+	color: white;
 }
