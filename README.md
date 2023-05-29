@@ -96,7 +96,6 @@ Install from VSCode Extensions panel or [vscode-chat-gpt](https://marketplace.vi
 
 ## Roadmap
 
-- Add ChatGpt Create image model.
 - Add ChatGpt Edit image model.
 - Add ChatGpt Create image variation model.
 
