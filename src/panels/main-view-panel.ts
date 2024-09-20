@@ -26,7 +26,7 @@ export class ChatGptPanel {
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
         this._panel.webview.html = this._getWebviewContent(this._panel.webview, extensionUri);
-        this._setWebviewMessageListener(this._panel.webview);     
+        this._setWebviewMessageListener(this._panel.webview);
 
         this.sendHistoryAgain();
     }
@@ -187,19 +187,22 @@ export class ChatGptPanel {
         }
     }
 
-    clearHistory() {       
-        this.searchHistory=[];
+    clearHistory() {
+        this.searchHistory = [];
         setHistoryData(this._context, this.searchHistory);
     }
 
     addHistoryToStore(question: string) {
-        this.searchHistory=getHistoryData(this._context);
+        const storeHistory = this.getHistoryFromStore();
+        if (storeHistory != undefined)
+            this.searchHistory = storeHistory;
+
         this.searchHistory.push(question);
         setHistoryData(this._context, this.searchHistory);
     }
 
     getHistoryFromStore() {
         const history = getHistoryData(this._context);
-       return history;
+        return history;
     }
 }

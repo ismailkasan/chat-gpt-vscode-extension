@@ -73,20 +73,28 @@ export function askToChatGptAsStream(query: string | undefined, apiKey: string, 
             const textStream = res.body?.pipeThrough(new TextDecoderStream());
             if (textStream) {
                 for await (const chunk of textStream) {
-                    const eventStr = chunk.split('\n\n');
-                    for (let i = 0; i < eventStr.length; i++) {
-                        const str = eventStr[i];
-                        if (str === 'data: [DONE]') {
-                            break;
-                        }
-                        if (str && str.slice(0, 6) === 'data: ') {
-                            const jsonStr = str.slice(6);
-                            const data: any = JSON.parse(jsonStr);
-                            const thisContent = data.choices[0].delta?.content || '';
-                            content += thisContent;
-                            observer.next(thisContent);
+                    // Checks error
+                    if (chunk.includes('insufficient_quota')) {
+                        const newString = chunk.replace(/\n/gi, '');
+                        const data: any = JSON.parse(newString);
+                        observer.next(data.error.message);
+                    } else {
+                        const eventStr = chunk.split('\n\n');
+                        for (let i = 0; i < eventStr.length; i++) {
+                            const str = eventStr[i];
+                            if (str === 'data: [DONE]') {
+                                break;
+                            }
+                            if (str && str.slice(0, 6) === 'data: ') {
+                                const jsonStr = str.slice(6);
+                                const data: any = JSON.parse(jsonStr);
+                                const thisContent = data.choices[0].delta?.content || '';
+                                content += thisContent;
+                                observer.next(thisContent);
+                            }
                         }
                     }
+
                 }
             }
         }).catch((err: Error) => {
@@ -146,7 +154,9 @@ export async function imageGenerationeFromChatGpt(prompt: string | undefined, ap
             body: JSON.stringify({
                 prompt: prompt,
                 n: Number(n),
-                size: size
+                size: size,
+                model: "dall-e-3",
+                quality: "standard"
             }),
             headers: {
                 "Content-Type": 'application/json',
@@ -155,12 +165,13 @@ export async function imageGenerationeFromChatGpt(prompt: string | undefined, ap
         });
 
         if (!response.ok) {
-            throw new Error(`Error! status: ${response.status}`);
+            const result: any = (await response.json());
+            
+            return `Error message: ${result.error.message}`;
+        } else {
+            const result: any = (await response.json());
+            return result.data;
         }
-
-        const result: any = (await response.json());
-
-        return result.data;
     } catch (error) {
         if (error instanceof Error) {
             console.log('error message: ', error.message);

@@ -159,7 +159,7 @@ function updateHistoryList() {
 
     const ul = document.getElementById('history-id');
 
-    if (ul != null) {
+    if (ul != null && searchHistory != null) {
         ul.textContent = '';
         let index = 0;
         for (const content of searchHistory) {
@@ -213,11 +213,11 @@ function onHistoryClicked(question: string) {
  */
 function addHistory(content: string) {
     if (content != undefined) {
-        if (searchHistory.length < 10) {
+        if (searchHistory&&searchHistory.length < 10) {
             if (!searchHistory.includes(content))
                 searchHistory.unshift(content);
         }
-        if (searchHistory.length == 10) {
+        if (searchHistory&&searchHistory.length == 10) {
             searchHistory.pop();
             if (!searchHistory.includes(content)) {
                 searchHistory.unshift(content);
