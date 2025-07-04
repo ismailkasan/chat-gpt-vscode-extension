@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
-import { getStoreData, getNonce, getAsWebviewUri, getVSCodeUri, getHistoryData } from "../utilities/utility.service";
+import { getNonce, getAsWebviewUri, getVSCodeUri } from "../utilities/utility.service";
+import { getSettingsData } from "../utilities/history.service";
 import { imageGenerationeFromChatGpt } from "../utilities/chat-gpt-api.service";
 
 /**
@@ -47,7 +48,7 @@ export class ImagePanel {
                 localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'out')]
             });
 
-            const logoMainPath = getVSCodeUri(extensionUri, ['out/media', 'chat-gpt-logo.jpeg']);
+            const logoMainPath = getVSCodeUri(extensionUri, ['out/assets/media', 'dark-logo.svg']);
             const icon = {
                 "light": logoMainPath,
                 "dark": logoMainPath
@@ -110,8 +111,8 @@ export class ImagePanel {
         // get uris from out directory based on vscode.extensionUri
         const webviewUri = getAsWebviewUri(webview, extensionUri, ["out", "imageview.js"]);
         const nonce = getNonce();
-        const styleVSCodeUri = getAsWebviewUri(webview, extensionUri, ['out/media', 'vscode.css']);
-        const logoMainPath = getAsWebviewUri(webview, extensionUri, ['out/media', 'chat-gpt-logo.jpeg']);
+        const styleVSCodeUri = getAsWebviewUri(webview, extensionUri, ['out/assets/css', 'styles.css']);
+        const logoMainPath = getAsWebviewUri(webview, extensionUri, ['out/assets/media', 'dark-logo.svg']);
 
         return /*html*/ `
         <!DOCTYPE html>
@@ -146,10 +147,10 @@ export class ImagePanel {
      * @param question :string
      */
     private askToChatGpt(question: string) {
-        const storeData = getStoreData(this._context);
-        const existApiKey = storeData.apiKey;
-        const existImageSize = storeData.imageSize;
-        const existResponseNumber = storeData.responseNumber;
+        const settingsData = getSettingsData(this._context);
+        const existApiKey = settingsData.apiKey;
+        const existImageSize = settingsData.imageSize;
+        const existResponseNumber = settingsData.responseNumber;
         if (existApiKey == undefined || existApiKey == null || existApiKey == '') {
             vscode.window.showInformationMessage('Please add your Open Ai api key!');
         } else if (existImageSize == undefined || existImageSize == null || existImageSize == 0) {

@@ -1,22 +1,41 @@
 // file: esbuild.js
 
+const fs = require('fs');
 const { build } = require("esbuild");
 const copyStaticFiles = require('esbuild-copy-static-files')
+
+const copyFontPlugin = () => ({
+    name: 'copyFontPlugin',
+    setup(build) {
+        build.onEnd(async () => {
+            try {
+                fs.copyFileSync('./node_modules/@vscode/codicons/dist/codicon.css', './out/media/codicon.css');
+                fs.copyFileSync('./node_modules/@vscode/codicons/dist/codicon.ttf', './out/media/codicon.ttf');
+            } catch (error) {
+                console.error(error, 'Failed to copy font files');
+            }
+        });
+    },
+});
 
 const baseConfig = {
     bundle: true,
     minify: process.env.NODE_ENV === "production",
     sourcemap: process.env.NODE_ENV !== "production",
-    plugins: [copyStaticFiles({
-        src: './src/media',
-        dest: './out/media',
-        dereference: true,
-        errorOnExist: false,
-        // filter: EXPLAINED_IN_MORE_DETAIL_BELOW,
-        preserveTimestamps: true,
-        recursive: true,
-      })],
+    plugins: [
+        copyStaticFiles({
+            src: './src/assets',
+            dest: './out/assets',
+            dereference: true,
+            errorOnExist: false,
+            // filter: EXPLAINED_IN_MORE_DETAIL_BELOW,
+            preserveTimestamps: true,
+            recursive: true,
+        }),
+        // copyFontPlugin()
+    ],
 };
+
 
 const extensionConfig = {
     ...baseConfig,
@@ -32,8 +51,8 @@ const webViewConfig = {
     ...baseConfig,
     target: "es2020",
     format: "esm",
-    entryPoints: ["./src/webviews/main-view.ts"],
-    outfile: "./out/mainview.js",
+    entryPoints: ["./src/webviews/chat-view.ts"],
+    outfile: "./out/chat-view.js",
 };
 
 const imageViewConfig = {
@@ -48,8 +67,8 @@ const sideBarViewConfig = {
     ...baseConfig,
     target: "es2020",
     format: "esm",
-    entryPoints: ["./src/webviews/side-bar-view.ts"],
-    outfile: "./out/side-bar-view.js",
+    entryPoints: ["./src/webviews/general-settings-view.ts"],
+    outfile: "./out/general-settings-view.js",
 };
 
 const testConfig = {
@@ -91,15 +110,15 @@ const watchConfig = {
             await build({
                 ...webViewConfig,
                 ...watchConfig,
-            });          
+            });
             await build({
                 ...imageViewConfig,
                 ...watchConfig,
-            });          
+            });
             await build({
                 ...sideBarViewConfig,
                 ...watchConfig,
-            });          
+            });
             await build({
                 ...testConfig,
                 ...watchConfig,

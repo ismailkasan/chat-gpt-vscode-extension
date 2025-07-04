@@ -2,8 +2,6 @@ import { Uri, Webview } from "vscode";
 import * as vscode from "vscode";
 import EventEmitter = require('events');
 
-
-
 /**
  * Click history question event emitter.
  */
@@ -42,6 +40,16 @@ export function getAsWebviewUri(webview: Webview, extensionUri: Uri, pathList: s
   return webview.asWebviewUri(Uri.joinPath(extensionUri, ...pathList));
 }
 
+export function getWhiteLogoUri(webview: Webview, extensionUri: Uri) {
+  const whiteLogoPath = getAsWebviewUri(webview, extensionUri, ['out/assets/media', 'white-logo.svg']);
+  return whiteLogoPath;
+}
+
+export function getDarkLogoUri(webview: Webview, extensionUri: Uri) {
+  const darkLogoPath = getAsWebviewUri(webview, extensionUri, ['out/assets/media', 'dark-logo.svg']);
+  return darkLogoPath;
+}
+
 /**
  * Create a vscode.Uri for source files.
  * @param extensionUri :vscode.Uri
@@ -52,80 +60,12 @@ export function getVSCodeUri(extensionUri: Uri, pathList: string[]) {
   return vscode.Uri.joinPath(extensionUri, ...pathList);
 }
 
-/**
- * Set storeData into context.globalState.
- * @param context :vscode.ExtensionContext
- * @param storeData : any
- */
-export function setStoreData(context: vscode.ExtensionContext, storeData: any) {
-  const state = stateManager(context);
-
-  if (storeData !== undefined) {
-    state.write({
-      storeData: storeData
+export function getNewGuid(): string {
+  // Generate a random UUID
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+    .replace(/[xy]/g, function (c) {
+      const r = Math.random() * 16 | 0,
+        v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
     });
-  }
-}
-
-export function setHistoryData(context: vscode.ExtensionContext, historyData: any) {
-  const state = stateManager(context);
-
-  if (historyData !== undefined) {
-    state.writeHistory({
-      historyData: historyData
-    });
-  }
-}
-
-/**
- * Gets storeData from context.globalState.
- * @param context :vscode.ExtensionContext
- * @returns string
- */
-export function getStoreData(context: vscode.ExtensionContext): any {
-  const state = stateManager(context);
-
-  const { storeData } = state.read();
-  return storeData as any;
-}
-
-export function getHistoryData(context: vscode.ExtensionContext): any {
-  const state = stateManager(context);
-
-  const { historyData } = state.readHistory();
-  return historyData as any;
-}
-
-/**
-* State Manager has read and write methods for api key. This methods set and get the api key from context.globalState.
-* @param context :vscode.ExtensionContext.
-* @returns void.
-*/
-export function stateManager(context: vscode.ExtensionContext) {
-  return {
-    read,
-    write,
-    writeHistory,
-    readHistory
-  };
-
-  function read() {
-    return {
-      storeData: context.globalState.get('storeData')
-    };
-  }
-  
-  function readHistory() {
-    return {
-      historyData: context.globalState.get('historyData')
-    };
-  }
-
-  function write(newState: any) {
-    context.globalState.update('storeData', newState.storeData);
-  }
-
-  function writeHistory(newState: any) {
-    context.globalState.update('historyData', newState.historyData);
-  }
 }

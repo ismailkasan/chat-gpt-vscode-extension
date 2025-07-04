@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; style-src ${webview.cspSource} 'self' 'unsafe-inline'; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
+    <link href="${bootstrapCssVSCodeUri}" rel="stylesheet">
+    <link href="${allCssVSCodeUri}" rel="stylesheet">
+    <link href="${styleVSCodeUri}" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="${logoMainPath}">
+</head>
+
+<body>
+    <main class="content">
+        <div class="card">
+            <div class="row g-0">
+                <div class="col-12 col-lg-3 col-xl-3 border-right">
+                    <div class="px-4 d-none d-md-block">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h3 class="h3 mb-3">History</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" class="list-group-item list-group-item-action border-0">
+                        <div class="badge bg-success float-right">5</div>
+                        <div class="d-flex align-items-start">
+
+                            <div class="flex-grow-1 ml-3">
+                                Vanessa Tucker
+                                <div class="small"><span class="fas fa-circle chat-online"></span> Online</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action border-0">
+                        <div class="badge bg-success float-right">2</div>
+                        <div class="d-flex align-items-start">
+                            <div class="flex-grow-1 ml-3">
+                                William Harris
+                                <div class="small"><span class="fas fa-circle chat-online"></span> Online</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action border-0">
+                        <div class="d-flex align-items-start">
+
+                            <div class="flex-grow-1 ml-3">
+                                Sharon Lessmanaaaa
+                                <div class="small"><span class="fas fa-circle chat-online"></span> Online</div>
+                            </div>
+                        </div>
+                    </a>
+                    <hr class="d-block d-lg-none mt-1 mb-0">
+                </div>
+                <div class="col-12 col-lg-9 col-xl-9">
+                    <div class="py-2 px-4 d-none d-lg-block">
+                        <div class="d-flex align-items-center py-1">
+                            <div class="position-relative">
+                            </div>
+                            <div class="flex-grow-1 pl-3">
+                            </div>
+                            <div>
+                                <button id="clear-button-id" type="button" class="btn btn-success btn-sm ml-5"> <i
+                                        class="fas fa-plus"></i> New Chat</button>
+                                <button id="clear-history-button-id" type="button" class="btn btn-secondary  btn-sm"> <i
+                                        class="fas fa-trash-alt"></i> Clear History</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="position-relative">
+                        <div class="chat-messages p-4">
+                            <div class="chat-message-right pb-4">
+                                <div>
+                                    <div class="font-weight-bold mb-1">You</div>
+                                    <div class="text-muted small text-nowrap mt-2">2:33 am</div>
+                                </div>
+                                <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+                                    Lorem ipsum dolor sit amet, vis erat denique in, dicunt prodesset te vix.
+                                </div>
+                            </div>
+                            <div class="chat-message-left pb-4">
+                                <div>
+                                    <img src="${darkLogoMainPath}" class="rounded-circle mr-1" alt="Sharon Lessman"
+                                        width="40" height="40">
+                                    <div class="text-muted small text-nowrap mt-2">2:34 am</div>
+                                </div>
+                                <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+                                    <div class="font-weight-bold mb-1">Sharon Lessman</div>
+                                    Sit meis deleniti eu, pri vidit meliore docendi ut, an eum erat animal commodo.
+                                </div>
+                            </div>
+                            <div class="chat-message-right mb-4">
+                                <div>
+                                    <div class="font-weight-bold mb-1 vs-code-editor-colo">You</div>
+                                    <div class="text-muted small text-nowrap mt-2 vs-code-editor-colo">2:43 am</div>
+                                </div>
+                                <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+                                    Lorem ipsum dolor sit amet, vis erat denique in, dicunt prodesset te vix.
+                                </div>
+                            </div>
+                            <div class="chat-message-left pb-4">
+                                <div>
+                                    <img src="${darkLogoMainPath}" class="rounded-circle mr-1" alt="Sharon Lessman"
+                                        width="40" height="40">
+                                    <div class="text-muted small text-nowrap mt-2">2:44 am</div>
+                                </div>
+                                <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+                                    <div class="font-weight-bold mb-1">Sharon Lessman</div>
+                                    Sit meis deleniti eu, pri vidit meliore docendi ut, an eum erat animal commodo.
+                                </div>
+                                <!--   <pre><code class="code" id="answers-id"></code></pre>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-0">
+                <div class="col-12 col-lg-3 col-xl-3 border-right">
+                </div>
+                <div class="col-12 col-lg-9 col-xl-9">
+                    <div class="row fixed-bottom">
+                        <div class="col-12 col-lg-2 col-xl-2">
+                        </div>
+                        <div class="col-12 col-lg-8 col-xl-8">
+                            <div class="flex-grow-0 py-3 px-4">
+                                <div class="input-group">
+                                    <textarea class="form-control" id="question-text-id" cols="3"
+                                        placeholder="Type your propt!"></textarea>
+                                    <button id="ask-button-id" type="button" class="btn btn-success  btn-sm ml-5"> <i
+                                            class="fas fa-paper-plane"></i> Send</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-2 col-xl-2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script nonce="${nonce}" src="${bootstrapScriptUri}"></script>
+    <script type="module" nonce="${nonce}" src="${webviewUri}"></script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import { fetch } from 'undici';
 import { TextDecoderStream } from 'node:stream/web';
 import { Observable } from 'rxjs';
+import { Prompt } from '../interfaces/common-interfaces';
 
 /**
  * Create asnyc request to ChatGpt api gets a response.
@@ -8,15 +9,15 @@ import { Observable } from 'rxjs';
  * @param apikey of ChatGpt.
  * @returns 
  */
-export async function askToChatGpt(query: string | undefined, apiKey: string) {
+export async function askOpenAi(prompt: Prompt, apiKey: string) {
     try {
         // 👇️ const response: Response
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             body: JSON.stringify({
-                model: "gpt-3.5-turbo",
-                messages: [{ role: "user", content: query }],
-                temperature: 0.7
+                model: prompt.settings.model,
+                messages: [{ role: "user", content: prompt.prompt }],
+                temperature: prompt.settings.temperature
             }),
             headers: {
                 "Content-Type": 'application/json',
@@ -32,13 +33,7 @@ export async function askToChatGpt(query: string | undefined, apiKey: string) {
 
         return result.choices[0].message.content;
     } catch (error) {
-        if (error instanceof Error) {
-            console.log('error message: ', error.message);
-            return error.message;
-        } else {
-            console.log('unexpected error: ', error);
-            return 'An unexpected error occurred';
-        }
+        throw error;
     }
 }
 
@@ -90,6 +85,7 @@ export function askToChatGptAsStream(query: string | undefined, apiKey: string, 
                                 const data: any = JSON.parse(jsonStr);
                                 const thisContent = data.choices[0].delta?.content || '';
                                 content += thisContent;
+                                console.log(thisContent, 'thisContent');
                                 observer.next(thisContent);
                             }
                         }
@@ -166,7 +162,7 @@ export async function imageGenerationeFromChatGpt(prompt: string | undefined, ap
 
         if (!response.ok) {
             const result: any = (await response.json());
-            
+
             return `Error message: ${result.error.message}`;
         } else {
             const result: any = (await response.json());

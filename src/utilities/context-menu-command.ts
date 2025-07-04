@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import { promptToTextDavinci003 } from './chat-gpt-api.service';
 import { window, ProgressLocation } from 'vscode';
+import { getNewGuid } from './utility.service';
 
 export function registerCommand(apiKey: string) {
 
@@ -16,8 +17,13 @@ export function registerCommand(apiKey: string) {
     });
 
     /*Add Documentaion */
-    vscode.commands.registerCommand("vscode-chat-gpt.addDocumentaion", () => {
+    vscode.commands.registerCommand("vscode-chat-gpt.addDocumentation", () => {
         addDocument(apiKey);
+    });
+
+    /*Insert Guid */
+    vscode.commands.registerCommand("vscode-chat-gpt.insertGuid", () => {
+        insertGuid();
     });
 }
 /**
@@ -143,53 +149,69 @@ function addDocument(apiKey: string) {
         default:
             break;
     }
+}
 
-    function showProgressRunning() {
-        let customCancellationToken: vscode.CancellationTokenSource | null = null;
+/**
+ * Insert Guid
+ * @returns 
+ */
+function insertGuid() {
+    const textEditor = vscode.window.activeTextEditor;
+    if (!textEditor) {
+        return; // No open text editor
+    }
 
-        window.withProgress({
-            location: ProgressLocation.Notification,
-            title: "I am long running!",
-            cancellable: true
-        }, (progress, token) => {
-
-            customCancellationToken = new vscode.CancellationTokenSource();
-            customCancellationToken.token.onCancellationRequested(() => {
-                customCancellationToken?.dispose();
-                customCancellationToken = null;
-
-                vscode.window.showInformationMessage("Cancelled the progress");
-                return;
-            });
+    const newGuid = getNewGuid();
+    textEditor.edit(editBuilder => {
+        editBuilder.insert(textEditor.selection.active, newGuid);
+    });
+}
 
 
-            token.onCancellationRequested(() => {
-                customCancellationToken?.cancel()
-                console.log("User canceled the long running operation");
-            });
+function showProgressRunning() {
+    let customCancellationToken: vscode.CancellationTokenSource | null = null;
 
-            progress.report({ increment: 0 });
+    window.withProgress({
+        location: ProgressLocation.Notification,
+        title: "I am long running!",
+        cancellable: true
+    }, (progress, token) => {
 
-            setTimeout(() => {
-                progress.report({ increment: 10, message: "Running..." });
-            }, 1000);
+        customCancellationToken = new vscode.CancellationTokenSource();
+        customCancellationToken.token.onCancellationRequested(() => {
+            customCancellationToken?.dispose();
+            customCancellationToken = null;
 
-            setTimeout(() => {
-                progress.report({ increment: 40, message: "Running..." });
-            }, 2000);
-
-            setTimeout(() => {
-                progress.report({ increment: 50, message: "Running..." });
-            }, 3000);
-
-            const p = new Promise<void>(resolve => {
-                setTimeout(() => {
-                    resolve();
-                }, 5000);
-            });
-
-            return p;
+            vscode.window.showInformationMessage("Cancelled the progress");
+            return;
         });
 
-    }
+
+        token.onCancellationRequested(() => {
+            customCancellationToken?.cancel()
+            console.log("User canceled the long running operation");
+        });
+
+        progress.report({ increment: 0 });
+
+        setTimeout(() => {
+            progress.report({ increment: 10, message: "Running..." });
+        }, 1000);
+
+        setTimeout(() => {
+            progress.report({ increment: 40, message: "Running..." });
+        }, 2000);
+
+        setTimeout(() => {
+            progress.report({ increment: 50, message: "Running..." });
+        }, 3000);
+
+        const p = new Promise<void>(resolve => {
+            setTimeout(() => {
+                resolve();
+            }, 5000);
+        });
+
+        return p;
+    });
 }

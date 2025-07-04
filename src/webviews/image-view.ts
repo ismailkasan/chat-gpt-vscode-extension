@@ -1,29 +1,12 @@
-import {
-    provideVSCodeDesignSystem,
-    vsCodeButton,
-    vsCodeTextArea,
-    vsCodeDivider,
-    vsCodeProgressRing,
-    vsCodeTextField,
-    ProgressRing,
-    Button,
-    TextArea,
-} from "@vscode/webview-ui-toolkit";
-
-/**
- * Register "@vscode/webview-ui-toolkit" component to vscode design system.
- */
-provideVSCodeDesignSystem().register(vsCodeButton(), vsCodeProgressRing(), vsCodeTextArea(), vsCodeDivider(), vsCodeProgressRing(), vsCodeTextField());
-
-const vscode = acquireVsCodeApi();
+const vscodeapi = acquireVsCodeApi();
 
 // Add load event listener.
 window.addEventListener("load", main);
 
 // image
-const askImageButton = document.getElementById("ask-image-button-id") as Button;
-const promptTextArea = document.getElementById("prompt-text-id") as TextArea;
-const clearImageButton = document.getElementById("clear-image-button-id") as Button;
+const askImageButton = document.getElementById("ask-image-button-id") as any;
+const imagePromptTextArea = document.getElementById("prompt-text-id") as HTMLInputElement;
+const clearImageButton = document.getElementById("clear-image-button-id") as HTMLInputElement;
 
 /**
  * Main function
@@ -37,7 +20,7 @@ function main() {
     clearImageButton?.addEventListener("click", handleImageClearClick);  
 
     // image enter event
-    promptTextArea?.addEventListener("keypress", function (event) {
+    imagePromptTextArea?.addEventListener("keypress", function (event) {
         if (event.key === "Enter") {
             event.preventDefault();
             // Trigger the button element with a click
@@ -98,13 +81,13 @@ function updateImageList(imageUrls: any[]) {
                 imgNode.src = img.url;
                 imgNode.width = 400;
                 imgNode.height = 400;
-                imgNode.alt = promptTextArea.value + '-' + index;
+                imgNode.alt = imagePromptTextArea.value + '-' + index;
                 imgNode.style.cursor = 'pointer';
                 aTag.appendChild(imgNode);
 
                 const descDivTag = document.createElement('div');
                 descDivTag.className = "desc";
-                descDivTag.textContent = promptTextArea.value + '-' + index;
+                descDivTag.textContent = imagePromptTextArea.value + '-' + index;
 
                 galleryDivTag.appendChild(aTag);
                 galleryDivTag.appendChild(descDivTag);
@@ -127,7 +110,7 @@ function handleImageAskClick() {
     // Send messages to Panel.
     vscode.postMessage({
         command: "press-image-ask-button",
-        data: promptTextArea.value,
+        data: imagePromptTextArea.value,
     });
 
     // Clear images filed.
@@ -143,7 +126,7 @@ function handleImageClearClick() {
     updateImageList([]);
 
     // Clear question field.
-    promptTextArea.value = '';
+    imagePromptTextArea.value = '';
 }
 
 
@@ -158,7 +141,7 @@ function showErrorMessage(message: string) {
  */
 function showProgressRing() {
     // add progress ring.
-    const progressRing = document.getElementById("progress-ring-id") as ProgressRing;
+    const progressRing = document.getElementById("progress-ring-id") as any;
     progressRing.style.display = 'inline-block';
 }
 
@@ -166,6 +149,6 @@ function showProgressRing() {
  * Hide progressing ring.
  */
 function hideProgressRing() {
-    const progressRing = document.getElementById("progress-ring-id") as ProgressRing;
+    const progressRing = document.getElementById("progress-ring-id") as any;
     progressRing.style.display = 'none';
 }

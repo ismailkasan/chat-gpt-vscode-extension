@@ -1,6 +1,6 @@
 {
   "name": "vscode-chat-gpt",
-  "displayName": "vscode-chat-gpt",
+  "displayName": "Code Companion",
   "description": "Extension uses ChatGpt Api to make chat compilations and image generations.",
   "version": "1.2.0",
   "publisher": "ikasann-self",
@@ -20,7 +20,7 @@
     "chat",
     "ai"
   ],
-  "icon": "out/media/chat-gpt-logo.jpeg",
+  "icon": "out/assets/media/code-companion.png",
   "galleryBanner": {
     "color": "#0000FF",
     "theme": "dark"
@@ -40,8 +40,8 @@
       "activitybar": [
         {
           "id": "chat-gpt-view",
-          "title": "Chat Gpt",
-          "icon": "./out/media/activity-bar-logo.svg"
+          "title": "Code Companion",
+          "icon": "./out/assets/media/code-companion-logo.svg"
         }
       ]
     },
@@ -49,15 +49,25 @@
       "chat-gpt-view": [
         {
           "type": "webview",
-          "id": "chat-gpt-view-id",
-          "name": "Chat Panel"
+          "id": "general-settings",
+          "name": "General Settings"
+        },
+        {
+          "type": "webview",
+          "id": "models",
+          "name": "Models"
+        },
+        {
+          "type": "webview",
+          "id": "keyboard-shortcuts",
+          "name": "Keyboard Shortcuts"
         }
       ]
     },
     "commands": [
       {
         "command": "vscode-chat-gpt.start",
-        "title": "Ask to ChatGpt"
+        "title": "Chat"
       },
       {
         "command": "vscode-chat-gpt.start-image",
@@ -65,20 +75,24 @@
       },
       {
         "command": "vscode-chat-gpt.refactor",
-        "title": "ChatGpt Refactor"   
+        "title": "CC Refactor"
       },
       {
         "command": "vscode-chat-gpt.addComments",
-        "title": "ChatGpt Add Comments"
+        "title": "CC Add Comments"
       },
       {
-        "command": "vscode-chat-gpt.addDocumentaion",
-        "title": "ChatGpt Add Documentaion"
+        "command": "vscode-chat-gpt.addDocumentation",
+        "title": "CC Add Documentaion"
+      },
+      {
+        "command": "vscode-chat-gpt.insertGuid",
+        "title": "CC Insert Guid"
       }
     ],
     "keybindings": [
       {
-        "command": "vscode-chat-gpt.addDocumentaion",
+        "command": "vscode-chat-gpt.addDocumentation",
         "key": "ctrl+alt+d",
         "mac": "shift+cmd+d"
       },
@@ -91,6 +105,21 @@
         "command": "vscode-chat-gpt.refactor",
         "key": "ctrl+alt+r",
         "mac": "shift+cmd+r"
+      },
+      {
+        "command": "vscode-chat-gpt.insertGuid",
+        "key": "ctrl+alt+g",
+        "mac": "shift+cmd+g"
+      },
+      {
+        "command": "vscode-chat-gpt.start",
+        "key": "ctrl+alt+s",
+        "mac": "shift+cmd+s"
+      },
+      {
+        "command": "vscode-chat-gpt.start-image",
+        "key": "ctrl+alt+i",
+        "mac": "shift+cmd+"
       }
     ],
     "menus": {
@@ -103,17 +132,21 @@
       "editor/context": [
         {
           "command": "vscode-chat-gpt.refactor",
-          "group": "ChatGpt",
-          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == csharp || editorLangId == java" 
+          "group": "Code Companion",
+          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == csharp || editorLangId == java"
         },
         {
           "command": "vscode-chat-gpt.addComments",
-          "group": "ChatGpt"
+          "group": "Code Companion"
         },
         {
-          "command": "vscode-chat-gpt.addDocumentaion",
-          "group": "ChatGpt",
-          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == csharp || editorLangId == java" 
+          "command": "vscode-chat-gpt.addDocumentation",
+          "group": "Code Companion",
+          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == csharp || editorLangId == java"
+        },
+        {
+          "command": "vscode-chat-gpt.insertGuid",
+          "group": "Code Companion"
         }
       ]
     },
@@ -121,8 +154,8 @@
       {
         "viewType": "markdown.preview",
         "icon": {
-          "light": "./out/media/chat-gpt-logo.jpeg",
-          "dark": "./out/media/chat-gpt-logo.jpeg"
+          "light": "./out/assets/media/code-companion-logo.svg",
+          "dark": "./out/assets/media/code-companion-logo.svg"
         }
       }
     ]
@@ -153,7 +186,8 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@vscode/webview-ui-toolkit": "^1.2.2",
+    "@google/genai": "^1.8.0",
+    "marked": "^16.0.0",
     "rxjs": "^7.8.0",
     "undici": "^5.21.0"
   }
