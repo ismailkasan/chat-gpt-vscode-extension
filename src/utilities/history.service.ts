@@ -5,20 +5,58 @@ import { HistoryItem, History, PromptResponse, Settings } from "../interfaces/co
 
 export function addHistory(response: PromptResponse, context: vscode.ExtensionContext): History {
 
-  const historyData = getHistoryData(context);
-
-  let history = historyData.find(a => a.id == response.historyId && a.platform == response.settings.platform);
-
+  let historyData = getHistoryData(context);
   const historyTitle = response.answer.length > 100 ? response.answer.substring(0, 100) + '...' : response.answer;
   const shortAnswer = response.answer.length > 5000 ? response.answer.substring(0, 5000) + '...' : response.answer;
 
-  response.answer = shortAnswer;
+  if (historyData) {
+    let history = historyData.find(a => a.id === response.historyId
+      && a.platform === response.settings.platform);
 
-  //Add new history
-  if (history == undefined) {
+    response.answer = shortAnswer;
 
-    // new history
-    history = {
+    //Add new history
+    if (history === undefined) {
+
+      // new history
+      history = {
+        id: response.historyId,
+        platform: response.settings.platform,
+        model: response.settings.model,
+        title: historyTitle,
+        chats: [{
+          answer: shortAnswer,
+          id: response.chatId,
+          date: new Date(),
+          prompt: response.prompt,
+          urls: []
+        } as HistoryItem],
+        date: new Date(),
+      } as History;
+
+      historyData.unshift(history);
+
+      if (historyData.length > 15) { historyData.pop(); }
+
+    } else {
+      // history topic exist
+
+      history.chats.unshift({
+        answer: shortAnswer,
+        id: response.chatId,
+        date: new Date(),
+        prompt: response.prompt,
+        urls: []
+      } as HistoryItem);
+
+      if (history.chats.length > 5) { history.chats.pop(); }
+
+    }
+    setHistoryData(context, historyData);
+    return history;
+  } else {
+
+    const newHistory = {
       id: response.historyId,
       platform: response.settings.platform,
       model: response.settings.model,
@@ -33,29 +71,12 @@ export function addHistory(response: PromptResponse, context: vscode.ExtensionCo
       date: new Date(),
     } as History;
 
-    historyData.unshift(history);
+    historyData = [newHistory];
 
-    if (historyData.length > 15)
-      historyData.pop();
-
-  } else {
-    // history topic exist
-
-    history.chats.unshift({
-      answer: shortAnswer,
-      id: response.chatId,
-      date: new Date(),
-      prompt: response.prompt,
-      urls: []
-    } as HistoryItem);
-
-    if (history.chats.length > 5)
-      history.chats.pop();
-
+     setHistoryData(context, historyData);
+    return newHistory;
   }
-  setHistoryData(context, historyData);
 
-  return history;
 }
 
 export function clearHistory(context: vscode.ExtensionContext) {
@@ -92,13 +113,13 @@ export function addSettings(context: vscode.ExtensionContext, setting: Settings)
   let existSettings;
 
   if (Array.isArray(settingsData)) {
-    existSettings = settingsData?.find(a => a.platform == setting.platform);
+    existSettings = settingsData?.find(a => a.platform === setting.platform);
   } else if (typeof settingsData === "object" && settingsData !== null) {
     settingsData = [settingsData];
   }
 
   //Add new settings
-  if (existSettings == undefined) {
+  if (existSettings === undefined) {
 
     // new history
     const newSettings = {
@@ -110,7 +131,11 @@ export function addSettings(context: vscode.ExtensionContext, setting: Settings)
       responseNumber: setting.responseNumber
     } as Settings;
 
-    settingsData.unshift(newSettings);
+    if (settingsData) {
+      settingsData.unshift(newSettings);
+    } else {
+      settingsData = [newSettings];
+    }
 
   } else {
     // settings exist

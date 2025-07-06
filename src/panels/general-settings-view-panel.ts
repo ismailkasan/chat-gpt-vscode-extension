@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { getNonce, getAsWebviewUri } from '../utilities/utility.service';
 import { getSettingsData, addSettings, getSelectedPlatform } from '../utilities/history.service';
 import { InitGeneralSettingsViewData } from '../interfaces/common-interfaces';
+import { HTML_OBJECT_IDS, MESSAGE_COMMANDS } from '../constants/constants';
 
 export class GeneralSettingsViewProvider implements vscode.WebviewViewProvider {
 
@@ -34,17 +35,20 @@ export class GeneralSettingsViewProvider implements vscode.WebviewViewProvider {
 		// Register message events that comes from the js.
 		this.addReceiveMessageEvents(webviewView.webview);
 
-
 		// Read the api key from globalState and send it to webview
 		const settingsData = getSettingsData(this._context);
 		const selectedPlatform = getSelectedPlatform(this._context);
 
 		const initData: InitGeneralSettingsViewData = {
-			"settings": settingsData,
-			"selectedPlatform": selectedPlatform,
+			settings: settingsData,
+			selectedPlatform: selectedPlatform,
 		};
 
-		this._view.webview.postMessage({ command: 'settings-exist', data: initData });
+		this._view.webview.postMessage(
+			{
+				command: MESSAGE_COMMANDS.existSettings,
+				data: initData
+			});
 	}
 
 	/**
@@ -55,14 +59,10 @@ export class GeneralSettingsViewProvider implements vscode.WebviewViewProvider {
 		webview.onDidReceiveMessage((message: any) => {
 			const command = message.command;
 			switch (command) {
-				case "start-chat":
+				case MESSAGE_COMMANDS.startChat:
 					this.startChatGptWebViewPanel();
 					break;
-
-				case "image-buton":
-					this.startImageWebViewPanel();
-					break;
-				case "save-settings":
+				case MESSAGE_COMMANDS.saveSettings:
 					const responseMessage = `Settings saved successfully.`;
 					addSettings(this._context, message.data);
 					vscode.window.showInformationMessage(responseMessage);
@@ -74,17 +74,10 @@ export class GeneralSettingsViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	/**
-	 * start main panel. 
+	 * start chat panel. 
 	 */
 	private startChatGptWebViewPanel(): void {
 		vscode.commands.executeCommand('vscode-chat-gpt.start');
-	}
-
-	/**
-	 * start image main  panel. 
-	 */
-	private startImageWebViewPanel(): void {
-		vscode.commands.executeCommand('vscode-chat-gpt.start-image');
 	}
 
 	/**
@@ -139,21 +132,21 @@ export class GeneralSettingsViewProvider implements vscode.WebviewViewProvider {
 						<div class="row">
 					  		<div class="col">
 								<label class="note"><i class="fas fa-key"></i> Platform:</label>
-								<select class="form-select" id="platform-select-field" aria-label="Default select example">
+								<select class="form-select" id="${HTML_OBJECT_IDS.platformSelectField}" aria-label="Default select example">
 								</select>
 							</div>
 						</div>
 						<div class="row">
 					  		<div class="col">
 								<label class="note"><i class="fas fa-key"></i> Model:</label>
-								<select class="form-select" id="model-select-field" aria-label="Default select example">
+								<select class="form-select" id="${HTML_OBJECT_IDS.modelSelectField}" aria-label="Default select example">
 								</select>
 							</div>
 						</div>
 						<div class="row">
 					  		<div class="col">
 								<label class="note"><i class="fas fa-key"></i> Api Key:</label>
-								<input id="api-key-text-field" placeholder="OpenAi api key." />
+								<input id="${HTML_OBJECT_IDS.apiKeyTextField}" placeholder="OpenAi api key." />
 							</div>
 						</div>
 						<div class="row">
@@ -162,7 +155,7 @@ export class GeneralSettingsViewProvider implements vscode.WebviewViewProvider {
 										<a href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random,
 										while lower values like 0.2 will make it more focused and deterministic."> <i class="fas fa-info-circle"></i>
 										</a> </label>
-									<input id="temperature-text-field" placeholder="0.8" />
+									<input id="${HTML_OBJECT_IDS.temperatureTextField}" placeholder="0.8" />
 							</div>
 						</div>
 						<div class="row">
@@ -171,7 +164,7 @@ export class GeneralSettingsViewProvider implements vscode.WebviewViewProvider {
 											data-bs-placement="top"
 											title="Smaller sizes are faster to generate. You can request 1-5 images at a time using the n parameter.">
 											<i class="fas fa-info-circle"></i> </a></label>
-									<input id="image-number-text-field" placeholder="Number of generated images." />
+									<input id="${HTML_OBJECT_IDS.imageNumberTextField}" placeholder="Number of generated images." />
 							</div>
 						</div>
 						<div class="row">
@@ -180,22 +173,18 @@ export class GeneralSettingsViewProvider implements vscode.WebviewViewProvider {
 											data-bs-placement="top"
 											title="Generated images can have a size of 256x256, 512x512, or 1024x1024 pixels."> <i
 												class="fas fa-info-circle"></i> </a></label>
-									<input id="image-size-text-field" placeholder="Size of images like '1024x1024'" />
+									<input id="${HTML_OBJECT_IDS.imageSizeTextField}" placeholder="Size of images like '1024x1024'" />
 							</div>
 						</div>
 						<div class="row">
 								<div class="flex-container-center">
-									<button id="start-button" type="button" class="btn btn-secondary btn-sm"><i
+									<button id="${HTML_OBJECT_IDS.startButton}" type="button" class="btn btn-secondary btn-sm"><i
 											class="far fa-comment-alt"></i>
 										Chat</button>
-									<button id="save-button" type="button" class="btn btn-success btn-sm"> <i
+									<button id="${HTML_OBJECT_IDS.saveButton}" type="button" class="btn btn-success btn-sm"> <i
 											class="fas fa-save"></i> Save</button>
 								</div>
-						</div>
-						<div class="row">
-						<p class="note">Buy me a coffe</p>
-						</div>
-						
+						</div>						
 					</div>
 					<script nonce="${nonce}" src="${scriptUri}"></script>
 					<script nonce="${nonce}" src="${bootstrapScriptUri}"></script>

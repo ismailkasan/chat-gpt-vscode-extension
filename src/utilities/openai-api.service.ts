@@ -1,7 +1,7 @@
 import { fetch } from 'undici';
 import { TextDecoderStream } from 'node:stream/web';
 import { Observable } from 'rxjs';
-import { Prompt } from '../interfaces/common-interfaces';
+import { Prompt, Settings } from '../interfaces/common-interfaces';
 
 /**
  * Create asnyc request to ChatGpt api gets a response.
@@ -9,8 +9,7 @@ import { Prompt } from '../interfaces/common-interfaces';
  * @param apikey of ChatGpt.
  * @returns 
  */
-export async function askOpenAi(prompt: Prompt, apiKey: string) {
-    try {
+export async function askOpenAi(prompt: Prompt, settings: Settings) {
         // 👇️ const response: Response
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -21,7 +20,7 @@ export async function askOpenAi(prompt: Prompt, apiKey: string) {
             }),
             headers: {
                 "Content-Type": 'application/json',
-                authorization: 'Bearer ' + apiKey,
+                authorization: 'Bearer ' + settings.apiKey,
             },
         });
 
@@ -32,9 +31,7 @@ export async function askOpenAi(prompt: Prompt, apiKey: string) {
         const result: any = (await response.json());
 
         return result.choices[0].message.content;
-    } catch (error) {
-        throw error;
-    }
+
 }
 
 /**
@@ -85,7 +82,6 @@ export function askToChatGptAsStream(query: string | undefined, apiKey: string, 
                                 const data: any = JSON.parse(jsonStr);
                                 const thisContent = data.choices[0].delta?.content || '';
                                 content += thisContent;
-                                console.log(thisContent, 'thisContent');
                                 observer.next(thisContent);
                             }
                         }

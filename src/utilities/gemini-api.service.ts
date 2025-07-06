@@ -1,17 +1,21 @@
 
-import { GoogleGenAI } from "@google/genai";
-import { Prompt } from '../interfaces/common-interfaces';
+import { GenerateContentConfig, GoogleGenAI, Modality } from "@google/genai";
+import { Prompt, Settings } from '../interfaces/common-interfaces';
 
-
-export async function askGemini(prompt: Prompt, apiKey: string) {
+export async function askGemini(prompt: Prompt, settings: Settings) {
     try {
-        const ai = new GoogleGenAI({ apiKey: apiKey });
+        const config = {} as GenerateContentConfig;
+        config.temperature = settings.temperature;
+        config.responseModalities = [Modality.TEXT, Modality.IMAGE];
+
+        const ai = new GoogleGenAI({ apiKey: settings.apiKey });
         const response = await ai.models.generateContent({
             model: prompt.settings.model,
             contents: prompt.prompt,
+            config: config
         });
         return response;
     } catch (error: any) {
-        throw error
+        throw error;
     }
 }

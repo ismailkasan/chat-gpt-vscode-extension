@@ -28,9 +28,14 @@ export interface Prompt {
 export interface PromptResponse extends Prompt {
     answer: string;
     date: Date;
-    urls: string[];
+    base64Images: Images[];
+    cdnImages: string[];
 }
-
+export interface Images{
+    cdnUrl:string;
+    base64:string;
+    mimeType:string;
+}
 export interface Settings {
     apiKey: string;
     temperature: number;

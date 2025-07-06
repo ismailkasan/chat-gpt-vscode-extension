@@ -1,5 +1,5 @@
-import { AiPlatforms } from "../constants/constants";
-import { History, Prompt, PromptResponse, Settings, InitChatViewData } from "../interfaces/common-interfaces";
+import { aiPlatforms, HTML_OBJECT_IDS, MESSAGE_COMMANDS } from "../constants/constants";
+import { History, Prompt, PromptResponse, Settings, InitChatViewData, Images } from "../interfaces/common-interfaces";
 const vscode = acquireVsCodeApi();
 
 // Add load event listener.
@@ -12,11 +12,10 @@ let selectedPaltform: string;
 let logoPath: string;
 
 // Declare Html elements
-const promptTextArea = document.getElementById("prompt-text-area") as HTMLInputElement;
-const sendButton = document.getElementById("send-button");
-const newChatButton = document.getElementById("new-chat-button");
-const clearHistoryButton = document.getElementById("clear-history-button");
-
+const promptTextArea = document.getElementById(HTML_OBJECT_IDS.promptTextArea) as HTMLInputElement;
+const sendButton = document.getElementById(HTML_OBJECT_IDS.sendButton);
+const newChatButton = document.getElementById(HTML_OBJECT_IDS.newChatButton);
+const clearHistoryButton = document.getElementById(HTML_OBJECT_IDS.clearHistoryButton);
 
 function chatMain() {
 
@@ -39,24 +38,17 @@ function chatMain() {
         window.addEventListener('message', event => {
             const message = event.data; // The json data that the extension sent
             switch (message.command) {
-                case 'prompt-responded-command':
-                    // Append answer.
+                case MESSAGE_COMMANDS.promptResponded:
                     const response = message.data as PromptResponse;
                     handlePromptResponse(response);
                     break;
-                case 'history-data-sended-to-webview-command':
+                case MESSAGE_COMMANDS.historyDataSendedToWebview:
                     historyList = message.data as History[];
                     updateLeftHistoryList();
                     break;
-                case 'init-view-command':
+                case MESSAGE_COMMANDS.initView:
                     const initViewData = message.data as InitChatViewData;
                     initView(initViewData);
-
-                    break;
-                case 'image-error-answer':
-                    // Append answer.
-                    showErrorMessage(message.data);
-                    hideProgressRing();
                     break;
                 case 'error':
                     break;
@@ -105,9 +97,7 @@ function handleClearHistoryButtonClick() {
     historyList = [];
 
     // Send messages to Panel.
-    vscode.postMessage({
-        command: "history-cleared-command",
-    });
+    postMessage(MESSAGE_COMMANDS.historyCleared, "");
 
     updateLeftHistoryList();
 
@@ -128,19 +118,13 @@ function handleNewPromptClick() {
         "date": new Date(),
     } as Prompt;
 
-
     // Send messages to Panel.
-    vscode.postMessage({
-        command: "prompt-created-command",
-        data: prompt
-    });
-
-    const time = changeTimeFormat(prompt.date);
+    postMessage(MESSAGE_COMMANDS.promptCreated, prompt);
 
     const you = `<div id="prompt-pane" class="chat-message-right pb-4">
                                     <div>
                                         <div class="font-weight-bold mb-1">You</div>
-                                        <div id="chat-prompt-time" class="text-muted small text-nowrap mt-2">${time}</div>
+                                        <div id="chat-prompt-time" class="text-muted small text-nowrap mt-2">${changeTimeFormat(prompt.date)}</div>
                                     </div>
                                     <div id="chat-prompt-${prompt.chatId}" class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
                                     ${prompt.prompt}                               
@@ -155,6 +139,7 @@ function handleNewPromptClick() {
                                     <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
                                         <div id="chat-answer-spinner-${prompt.chatId}"></div>                                    
                                         <div id="chat-answer-${prompt.chatId}"></div>                                    
+                                        <div id="chat-answer-images-${prompt.chatId}"></div>                                    
                                     </div>
                                 </div>`;
 
@@ -188,7 +173,7 @@ function handlePromptResponse(response: PromptResponse): void {
     scrollToBottom();
 }
 
-function updatePromptResponse(response: PromptResponse) {
+async function updatePromptResponse(response: PromptResponse) {
     promptTextArea.value = '';
 
     const chatAnswerTime = document.getElementById('chat-answer-time-' + response.chatId);
@@ -196,11 +181,18 @@ function updatePromptResponse(response: PromptResponse) {
         chatAnswerTime.textContent = changeTimeFormat(response.date);
 
     const chatAnswer = document.getElementById('chat-answer-' + response.chatId);
-    if (chatAnswer)
-        typeHtmlWithTypingEffect(response.answer, chatAnswer);
+    if (chatAnswer) {
+
+        await typeHtmlWithTypingEffect(response.answer, chatAnswer);
+
+        const chatImages = document.getElementById('chat-answer-images-' + response.chatId);
+
+        addBase64ImagesToHtml(response.base64Images, chatImages);
+
+    }
 }
 
-function typeHtmlWithTypingEffect(html: string, target: HTMLElement, delay = 20) {
+function typeHtmlWithTypingEffect(html: string, target: HTMLElement, delay = 20): Promise<void> {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     const rootNodes = Array.from(doc.body.childNodes);
@@ -221,11 +213,52 @@ function typeHtmlWithTypingEffect(html: string, target: HTMLElement, delay = 20)
         }
     }
 
-    (async () => {
+    return (async () => {
         for (const node of rootNodes) {
             await processNode(node, target);
         }
     })();
+}
+
+function addBase64ImagesToHtml(images: Images[], container: HTMLElement) {
+    images.forEach((image, index) => {
+        const dataUrl = `data:${image.mimeType};base64,${image.base64}`;
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        img.alt = `Generated Image ${index + 1}`;
+        img.style.maxWidth = '100%';
+        img.style.marginTop = '10px';
+        container.appendChild(img);
+
+        // const download = `<a href="#" id="download-link" class="note" download="my-image.png">Download Image</a>`;
+
+        const download = document.createElement('a');
+        download.download = 'my-image.png';
+        download.textContent = 'Download';
+        download.className = 'note';
+        download.style = 'cursor:pointer;';
+
+        download.addEventListener('click', () => {
+            downloadImage(image.base64);
+        });
+
+        container.append(download);
+    });
+}
+
+function downloadImage(base64Data: string) {
+    const data = {
+        base64: base64Data,
+        filename: 'generated-image.png'
+    };
+    postMessage(MESSAGE_COMMANDS.downloadImage, data);
+}
+
+function postMessage(command: string, data: any) {
+    vscode.postMessage({
+        command: command,
+        data: data,
+    });
 }
 
 function orderPromptsAndResponsesOnchatPanel(id: string) {
@@ -265,7 +298,6 @@ function orderPromptsAndResponsesOnchatPanel(id: string) {
             const answerMessages = document.getElementById('chat-answer-messages');
             if (answerMessages)
                 answerMessages.appendChild(fragment);
-
         });
     }
 }
@@ -279,7 +311,7 @@ function scrollToBottom(): void {
 }
 
 function updateLeftHistoryList() {
-    
+
     const platformHistoryList = historyList.filter(a => a.platform == selectedPaltform);
 
     const ul = document.getElementById('history-id');
@@ -333,12 +365,11 @@ function onLeftHistoryItemClicked(history: History) {
 
 function updatePaltformModelTitle() {
     const topicTitle = document.getElementById('platform-model-title');
-    const selectedSettings = settings?.find(a => a.platform == selectedPaltform);
+    const selectedSettings = settings?.find(a => a.platform === selectedPaltform);
 
-    const platform = AiPlatforms[selectedPaltform].label;
+    const platform = aiPlatforms[selectedPaltform].label;
 
-    if (topicTitle)
-        topicTitle.textContent = platform + ' - ' + selectedSettings?.model;
+    if (topicTitle) { topicTitle.textContent = platform + ' - ' + selectedSettings?.model; }
 }
 
 function clearChatPanel(): void {

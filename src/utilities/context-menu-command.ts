@@ -1,6 +1,6 @@
 
 import * as vscode from 'vscode';
-import { promptToTextDavinci003 } from './chat-gpt-api.service';
+import { promptToTextDavinci003 } from './openai-api.service';
 import { window, ProgressLocation } from 'vscode';
 import { getNewGuid } from './utility.service';
 
