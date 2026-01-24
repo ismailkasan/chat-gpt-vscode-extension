@@ -44,6 +44,7 @@ export class GeneralSettingsViewProvider implements vscode.WebviewViewProvider {
 			selectedPlatform: selectedPlatform,
 		};
 
+		console.log('initData', initData);
 		this._view.webview.postMessage(
 			{
 				command: MESSAGE_COMMANDS.existSettings,

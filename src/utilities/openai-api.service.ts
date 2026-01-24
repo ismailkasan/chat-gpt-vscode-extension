@@ -2,6 +2,7 @@ import { fetch } from 'undici';
 import { TextDecoderStream } from 'node:stream/web';
 import { Observable } from 'rxjs';
 import { Prompt, Settings } from '../interfaces/common-interfaces';
+import { aiPlatforms, HTTP_METHODS } from '../constants/constants';
 
 /**
  * Create asnyc request to ChatGpt api gets a response.
@@ -10,27 +11,30 @@ import { Prompt, Settings } from '../interfaces/common-interfaces';
  * @returns 
  */
 export async function askOpenAi(prompt: Prompt, settings: Settings) {
-        // 👇️ const response: Response
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            body: JSON.stringify({
-                model: prompt.settings.model,
-                messages: [{ role: "user", content: prompt.prompt }],
-                temperature: prompt.settings.temperature
-            }),
-            headers: {
-                "Content-Type": 'application/json',
-                authorization: 'Bearer ' + settings.apiKey,
-            },
-        });
+    // 👇️ const response: Response
+    const baseUrl = aiPlatforms["openai"].baseUrl;
+    const apiUrl = aiPlatforms["openai"].models?.find(a => a.value == prompt.settings.model)?.apiUrl;
 
-        if (!response.ok) {
-            throw new Error(`Error! status: ${response.status}`);
-        }
+    const response = await fetch(`${baseUrl}${apiUrl}`, {
+        method: HTTP_METHODS.post,
+        body: JSON.stringify({
+            model: prompt.settings.model,
+            messages: [{ role: "user", content: prompt.prompt }],
+            temperature: prompt.settings.temperature
+        }),
+        headers: {
+            "Content-Type": 'application/json',
+            authorization: 'Bearer ' + settings.apiKey,
+        },
+    });
 
-        const result: any = (await response.json());
+    if (!response.ok) {
+        throw new Error(`Error! status: ${response.status}`);
+    }
 
-        return result.choices[0].message.content;
+    const result: any = (await response.json());
+
+    return result.choices[0].message.content;
 
 }
 
@@ -97,11 +101,14 @@ export function askToChatGptAsStream(query: string | undefined, apiKey: string, 
 
 export async function promptToTextDavinci003(prompt: string, apikey: string) {
     try {
-        // 👇️ const response: Response
-        const response = await fetch('https://api.openai.com/v1/completions', {
-            method: 'POST',
+        const model = 'text-davinci-003';
+        const baseUrl = aiPlatforms["openai"].baseUrl;
+        const apiUrl = aiPlatforms["openai"].models?.find(a => a.value == model)?.apiUrl;
+
+        const response = await fetch(`${baseUrl}${apiUrl}`, {
+            method: HTTP_METHODS.post,
             body: JSON.stringify({
-                model: "text-davinci-003",
+                model: model,
                 prompt: prompt,
                 max_tokens: 2048,
                 temperature: 0.0,

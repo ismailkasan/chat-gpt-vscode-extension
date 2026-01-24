@@ -55,14 +55,6 @@ const webViewConfig = {
     outfile: "./out/chat-view.js",
 };
 
-const imageViewConfig = {
-    ...baseConfig,
-    target: "es2020",
-    format: "esm",
-    entryPoints: ["./src/webviews/image-view.ts"],
-    outfile: "./out/imageview.js",
-};
-
 const sideBarViewConfig = {
     ...baseConfig,
     target: "es2020",
@@ -112,10 +104,6 @@ const watchConfig = {
                 ...watchConfig,
             });
             await build({
-                ...imageViewConfig,
-                ...watchConfig,
-            });
-            await build({
                 ...sideBarViewConfig,
                 ...watchConfig,
             });
@@ -127,7 +115,6 @@ const watchConfig = {
         } else {
             await build(extensionConfig);
             await build(webViewConfig);
-            await build(imageViewConfig);
             await build(sideBarViewConfig);
             await build(testConfig);
             console.log("build complete");

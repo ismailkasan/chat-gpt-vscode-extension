@@ -78,10 +78,6 @@
         "title": "CC Refactor"
       },
       {
-        "command": "vscode-chat-gpt.addComments",
-        "title": "CC Add Comments"
-      },
-      {
         "command": "vscode-chat-gpt.addDocumentation",
         "title": "CC Add Documentaion"
       },
@@ -97,11 +93,6 @@
         "mac": "shift+cmd+d"
       },
       {
-        "command": "vscode-chat-gpt.addComments",
-        "key": "ctrl+alt+c",
-        "mac": "shift+cmd+c"
-      },
-      {
         "command": "vscode-chat-gpt.refactor",
         "key": "ctrl+alt+r",
         "mac": "shift+cmd+r"
@@ -115,11 +106,6 @@
         "command": "vscode-chat-gpt.start",
         "key": "ctrl+alt+s",
         "mac": "shift+cmd+s"
-      },
-      {
-        "command": "vscode-chat-gpt.start-image",
-        "key": "ctrl+alt+i",
-        "mac": "shift+cmd+"
       }
     ],
     "menus": {
@@ -133,16 +119,12 @@
         {
           "command": "vscode-chat-gpt.refactor",
           "group": "Code Companion",
-          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == csharp || editorLangId == java"
-        },
-        {
-          "command": "vscode-chat-gpt.addComments",
-          "group": "Code Companion"
+          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == csharp || editorLangId == java || editorLangId == html || editorLangId == css"
         },
         {
           "command": "vscode-chat-gpt.addDocumentation",
           "group": "Code Companion",
-          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == csharp || editorLangId == java"
+          "when": "editorLangId == typescript || editorLangId == javascript || editorLangId == csharp || editorLangId == java || editorLangId == html || editorLangId == css"
         },
         {
           "command": "vscode-chat-gpt.insertGuid",

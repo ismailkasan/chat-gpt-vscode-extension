@@ -3,22 +3,20 @@ import * as vscode from 'vscode';
 import { promptToTextDavinci003 } from './openai-api.service';
 import { window, ProgressLocation } from 'vscode';
 import { getNewGuid } from './utility.service';
+import { editorCommentPrompts, editorRefactorPrompts } from '../constants/constants';
+import { askGemini } from './gemini-api.service';
+import { Prompt, Settings } from '../interfaces/common-interfaces';
 
-export function registerCommand(apiKey: string) {
+export function registerCommand(platform: string, settings: Settings) {
 
     /*Refactor */
     vscode.commands.registerCommand("vscode-chat-gpt.refactor", () => {
-        refactorCode(apiKey)
+        refactorCode(platform, settings)
     });
 
     /*Add Comment */
-    vscode.commands.registerCommand("vscode-chat-gpt.addComments", () => {
-        addComment(apiKey);
-    });
-
-    /*Add Documentaion */
     vscode.commands.registerCommand("vscode-chat-gpt.addDocumentation", () => {
-        addDocument(apiKey);
+        addDocumentation(platform, settings);
     });
 
     /*Insert Guid */
@@ -26,24 +24,25 @@ export function registerCommand(apiKey: string) {
         insertGuid();
     });
 }
+
 /**
  * Refactor code via ChatGpt
  * @param apiKey :string
  * @returns 
  */
-function refactorCode(apiKey: string) {
+function refactorCode(platform: string, settings: Settings) {
     const textEditor = vscode.window.activeTextEditor;
     if (!textEditor) {
         return; // No open text editor
     }
     var selection = textEditor.selection;
-    var selectedText = textEditor.document.getText(selection);
-    let prompt = `Refactor the following ${textEditor.document.languageId} code ` + selectedText;
+    var selectedText = textEditor.document.getText(selection).replace(/"/g, "'");
 
-    promptToTextDavinci003(prompt, apiKey).then(result => {
-        // vscode.commands.executeCommand("cursorMove", { "to": "viewPortTop" });
-        textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, result));
-    });
+    const language = textEditor.document.languageId;
+    const promptPrefix = editorRefactorPrompts.find(a => a.language === language).promptPrefix;
+    const prompt = promptPrefix + selectedText;
+
+    askAiPlatforms(platform, prompt, settings, textEditor);
 }
 
 /**
@@ -51,103 +50,45 @@ function refactorCode(apiKey: string) {
  * @param apiKey :string
  * @returns 
  */
-function addComment(apiKey: string) {
+function addDocumentation(platform: string, settings: Settings) {
     const textEditor = vscode.window.activeTextEditor;
     if (!textEditor) {
         return; // No open text editor
     }
     var selection = textEditor.selection;
-    var selectedText = textEditor.document.getText(selection);
-    switch (textEditor.document.languageId) {
-        case 'html':
-            {
-                let prompt = "Add comments for the following HTML code and format with 80 colums." + selectedText;
-                prompt = prompt.replace(/"/g, "'");
+    var selectedText = textEditor.document.getText(selection).replace(/"/g, "'");
 
-                promptToTextDavinci003(prompt, apiKey).then(result => {
-                    textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, result + "\n" + selectedText));
-                });
-                break;
-            }
-        case 'css':
-            {
-                let prompt = "Add comments for the following CSS code and format with 80 colums." + selectedText;
-                prompt = prompt.replace(/"/g, "'");
+    const language = textEditor.document.languageId;
+    const promptPrefix = editorCommentPrompts.find(a => a.language === language).promptPrefix;
+    const prompt = promptPrefix + selectedText;
 
-                promptToTextDavinci003(prompt, apiKey).then(result => {
-                    textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, result + "\n" + selectedText));
-                });
-                break;
-            }
-        default:
-            const prompt = "Add comments for the following code and format with 80 colums." + selectedText;
-
-            promptToTextDavinci003(prompt, apiKey).then(result => {
-                textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, result + "\n" + selectedText));
-            })
-            break;
-    }
-
+    askAiPlatforms(platform, prompt, settings, textEditor);
 }
 
-/**
- * Add documents via ChatGpt
- * @param apiKey :string
- * @returns 
- */
-function addDocument(apiKey: string) {
-    const textEditor = vscode.window.activeTextEditor;
-    if (!textEditor) {
-        return; // No open text editor
-    }
-    var selection = textEditor.selection;
-    var selectedText = textEditor.document.getText(selection);
+function askAiPlatforms(platform: string, prompt: string, settings: Settings, textEditor: vscode.TextEditor) {
+    if (platform === 'openai') {
+        promptToTextDavinci003(prompt, settings.apiKey)
+            .then(result => {
+                textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, result));
+            });
+    } else if (platform === 'gemini') {
 
-    switch (textEditor.document.languageId) {
+        const model = {
+            prompt: prompt,
+            settings: settings
+        } as Prompt;
 
-        case 'javascript':
-            {
-                const prompt = "Generate documentation comment following JSDoc specification with input parameters and return value type and add comment closing tag for the following code. " + selectedText;
+        askGemini(model, settings)
+            .then(result => {
+                textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, result.text));
+            }).catch(err=>{
+                    var selectedText = textEditor.document.getText(textEditor.selection).replace(/"/g, "'");
+                const errorContent = `/* ${err.message} */ \n ${selectedText}`;
+                textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, errorContent));
+            });
 
-                promptToTextDavinci003(prompt, apiKey).then(result => {
-                    const parts = result.split('*/') as string[];
-                    textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, parts[0] + "*/ \n" + selectedText));
-                });
-                break;
-            }
-        case 'java':
-            {
-                const prompt = "Generate documentation comment following Javadoc specification with input parameters and return value type and add comment closing tag for the following code. " + selectedText;
-
-                promptToTextDavinci003(prompt, apiKey).then(result => {
-                    const parts = result.split('*/') as string[];
-                    textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, parts[0] + "*/ \n" + selectedText));
-                });
-                break;
-            }
-        case 'typescript':
-            {
-                const prompt = "Generate documentation comment following TSDoc specification with input parameters and return value type and add comment closing tag for the following code. " + selectedText;
-
-                promptToTextDavinci003(prompt, apiKey).then(result => {
-                    const parts = result.split('*/') as string[];
-                    textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, parts[0] + "*/ \n" + selectedText));
-                });
-                break;
-            }
-        case 'csharp':
-            {
-                const prompt = "Generate documentation following Annex D Documentation comments specification with input parameters and return value type and add summary closing tag for the following c# code. " + selectedText;
-
-                promptToTextDavinci003(prompt, apiKey).then(result => {
-                    const parts = result.split('</returns>') as string[];
-                    textEditor.edit(editBuilder => editBuilder.replace(textEditor.selection, parts[0] + "</returns> \n" + selectedText));
-                });
-                break;
-            }
-
-        default:
-            break;
+    } else {
+        return;
     }
 }
 
@@ -166,7 +107,6 @@ function insertGuid() {
         editBuilder.insert(textEditor.selection.active, newGuid);
     });
 }
-
 
 function showProgressRunning() {
     let customCancellationToken: vscode.CancellationTokenSource | null = null;

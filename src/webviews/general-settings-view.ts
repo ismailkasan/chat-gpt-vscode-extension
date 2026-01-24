@@ -26,9 +26,28 @@ let selectedPlatformHistory: string;
  */
 function generalSettingsMain() {
 
-    // Sayfa ilk yüklendiğinde
-    populatePlatforms();
-    populateModels(platformSelect.value);
+    // Handle messages sent from the extension or panel to the webview
+    window.addEventListener('message', event => {
+        const message = event.data; // The json data that the extension sent
+        switch (message.command) {
+            case MESSAGE_COMMANDS.existSettings:
+                console.log('MESSAGE_COMMANDS.existSettings', message.data);
+
+                const initViewData = message.data as InitGeneralSettingsViewData;
+
+                settingsHistory = initViewData.settings;
+                selectedPlatformHistory = initViewData.selectedPlatform;
+
+                initWebView(initViewData);
+
+                break;
+            case 'error':
+                console.log(message);
+                break;
+        }
+    });
+
+
 
     // Add eventLsteners of Html elements.
     startButton?.addEventListener("click", handleStartButtonClick);
@@ -52,26 +71,16 @@ function generalSettingsMain() {
         populateModels(platformSelect.value);
     });
 
-    // Handle messages sent from the extension or panel to the webview
-    window.addEventListener('message', event => {
-        const message = event.data; // The json data that the extension sent
-        switch (message.command) {
-            case MESSAGE_COMMANDS.existSettings:
 
-                const initViewData = message.data as InitGeneralSettingsViewData;
-                initWebView(initViewData);
-
-                break;
-            case 'error':
-                console.log(message);
-                break;
-        }
-    });
 }
 
 function initWebView(initViewData: InitGeneralSettingsViewData) {
-    settingsHistory = initViewData.settings;
-    selectedPlatformHistory = initViewData.selectedPlatform;
+
+    // Sayfa ilk yüklendiğinde
+    populatePlatforms();
+    populateModels(initViewData.selectedPlatform);
+
+    console.log('initViewData', initViewData);
 
     const platform = selectedPlatformHistory;
 
@@ -137,6 +146,7 @@ function populatePlatforms(): void {
 
 function populateModels(platformKey: string): void {
     const platform = aiPlatforms[platformKey];
+
     if (!platform) { return; }
 
     modelSelect.innerHTML = "";
